@@ -21,13 +21,17 @@ and notes for you.
 2. Open `Wave.xcodeproj` in Xcode.
 3. Press Run.
 
+## Install
+
+```
+xcodebuild -scheme Wave -configuration Release -derivedDataPath build
+rm -rf /Applications/Wave.app && cp -R build/Build/Products/Release/Wave.app /Applications/
+ln -sf /Applications/Wave.app/Contents/Helpers/wave /opt/homebrew/bin/wave
+```
+
+First launch asks for Reminders access. The `wave` command asks once more, for itself.
+
 ## Command line
-
-The `.app` ships a `wave` binary. Put it on your PATH once:
-
-```
-ln -s /Applications/Wave.app/Contents/Helpers/wave /usr/local/bin/wave
-```
 
 ```
 wave task add "Buy milk" --list Personal --due "2026-10-20 09:00"

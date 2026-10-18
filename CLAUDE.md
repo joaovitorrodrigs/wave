@@ -20,7 +20,14 @@ No exceptions.
   grid, computed streak. Stored in SwiftData, local only, no iCloud.
 - Finances: read-only mirror of Banco MCP REST API (`api.mcp.ai/api/openfinance`).
   Balances and transactions, cached locally. No manual entry. API key in Keychain.
-- CLI `wave` ships inside the `.app`, shares code and store. `task add|list|done`,
+- CLI `wave` ships inside the `.app` at `Contents/Helpers/wave` (not `MacOS/`: APFS is
+  case-insensitive and `wave` would overwrite the app binary `Wave`). Target is `WaveCLI`,
+  module `WaveCLI`, product `wave`, for the same reason.
+- Any CLI command that touches a privacy-protected API (Reminders, Calendar, Apple Events)
+  must run after the responsibility-disclaim re-spawn at the top of `CLI/main.swift`.
+  Otherwise macOS attributes the request to the launching app (Terminal, Cursor, Claude
+  Code) and hosts without the matching usage string are denied silently, no prompt.
+- CLI `wave` shares code and store with the app. `task add|list|done`,
   `note add`, one set of commands per module, `--json` output for agents.
 - Menu bar panel: compact "Today" plus today's habits.
 - UI native macOS look in v1. Brand identity applied later.
