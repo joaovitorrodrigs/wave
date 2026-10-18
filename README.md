@@ -24,8 +24,8 @@ and notes for you.
 ## Install
 
 ```
-xcodebuild -scheme Wave -configuration Release -derivedDataPath build
-rm -rf /Applications/Wave.app && cp -R build/Build/Products/Release/Wave.app /Applications/
+xcodebuild -scheme Wave -configuration Release -derivedDataPath /tmp/wave-build
+rm -rf /Applications/Wave.app && cp -R /tmp/wave-build/Build/Products/Release/Wave.app /Applications/
 ln -sf /Applications/Wave.app/Contents/Helpers/wave /opt/homebrew/bin/wave
 ```
 

@@ -40,6 +40,12 @@ No exceptions.
 One module at a time, in daily use before the next starts:
 tasks, agenda (inside Today), habits, notes, finances, menu bar.
 
+## Build
+
+Always pass `-derivedDataPath` outside the repo (for example `/tmp/wave-build`). The repo
+lives in an iCloud-synced folder; Finder metadata on build output makes codesign fail with
+"resource fork, Finder information, or similar detritus not allowed".
+
 ## Boundaries
 
 Not part of the Wave Studio wiki. The wiki ingests only what is exported to `raw/`.
