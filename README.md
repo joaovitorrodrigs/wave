@@ -34,6 +34,7 @@ First launch asks for Reminders access. The `wave` command asks once more, for i
 ## Command line
 
 ```
+wave today                # today's events and tasks
 wave task add "Buy milk" --list Personal --due "2026-10-20 09:00"
 wave task list            # today
 wave task list Personal

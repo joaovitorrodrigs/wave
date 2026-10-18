@@ -24,7 +24,8 @@ if getenv("WAVE_DISCLAIMED") == nil, let exe = Bundle.main.executablePath {
 
 func usage() -> Never {
     print("""
-    usage: wave task add <title> [--list <name>] [--due "YYYY-MM-DD[ HH:mm]"]
+    usage: wave today                   events and tasks for today
+           wave task add <title> [--list <name>] [--due "YYYY-MM-DD[ HH:mm]"]
            wave task list [<list>]      (default: today)
            wave task done <id>
     Add --json for machine-readable output.
@@ -52,54 +53,78 @@ func parseDate(_ s: String) -> Date? {
     return nil
 }
 
+let iso = ISO8601DateFormatter()
+
+func taskRows(_ items: [EKReminder]) -> [[String: Any]] {
+    items.map { ["id": $0.id, "title": $0.title ?? "", "list": $0.calendar.title, "due": $0.dueDate.map(iso.string) as Any] }
+}
+
+func eventRows(_ events: [EKEvent]) -> [[String: Any]] {
+    events.map { ["title": $0.title ?? "", "calendar": $0.calendar.title, "allDay": $0.isAllDay,
+                  "start": iso.string(from: $0.startDate), "end": iso.string(from: $0.endDate)] }
+}
+
+func printJSON(_ object: Any) {
+    print(String(decoding: try! JSONSerialization.data(withJSONObject: object), as: UTF8.self))
+}
+
 func emit(_ items: [EKReminder]) {
-    if json {
-        let rows = items.map { ["id": $0.id, "title": $0.title ?? "", "list": $0.calendar.title,
-                                "due": $0.dueDate.map { ISO8601DateFormatter().string(from: $0) } as Any] }
-        print(String(decoding: try! JSONSerialization.data(withJSONObject: rows), as: UTF8.self))
-    } else {
-        for r in items {
-            let due = r.dueDate.map { "  " + $0.formatted(date: .abbreviated, time: .shortened) } ?? ""
-            print("\(r.id)  \(r.title ?? "")\(due)  [\(r.calendar.title)]")
-        }
+    if json { printJSON(taskRows(items)); return }
+    for r in items {
+        let due = r.dueDate.map { "  " + $0.formatted(date: .abbreviated, time: .shortened) } ?? ""
+        print("\(r.id)  \(r.title ?? "")\(due)  [\(r.calendar.title)]")
     }
 }
 
-guard args.count >= 2, args.removeFirst() == "task" else { usage() }
+guard !args.isEmpty else { usage() }
 let listName = option("--list")
 let due = option("--due")
-let command = args.removeFirst()
+var command = args.removeFirst()
+if command == "task" {
+    guard !args.isEmpty else { usage() }
+    command += " " + args.removeFirst()
+}
 
-let reminders = Reminders()
+let store = Store()
 
 func run() async throws {
-    await reminders.load()
-    guard reminders.authorized else {
-        print("Reminders access denied (status \(EKEventStore.authorizationStatus(for: .reminder).rawValue))\(reminders.accessError.map { ": " + $0 } ?? "").")
+    await store.load()
+    guard store.authorized else {
+        print("Reminders access denied (status \(EKEventStore.authorizationStatus(for: .reminder).rawValue))\(store.accessError.map { ": " + $0 } ?? "").")
         print("Allow it in System Settings > Privacy & Security > Reminders, or run: tccutil reset Reminders")
         exit(1)
     }
-    func list(named name: String?) -> EKCalendar? { name.flatMap { n in reminders.lists.first { $0.title.caseInsensitiveCompare(n) == .orderedSame } } }
+    func list(named name: String?) -> EKCalendar? { name.flatMap { n in store.lists.first { $0.title.caseInsensitiveCompare(n) == .orderedSame } } }
 
     switch command {
-    case "add":
+    case "today":
+        await store.fetchEvents()
+        await store.fetch(.today)
+        if json { printJSON(["events": eventRows(store.events), "tasks": taskRows(store.items)]); return }
+        for e in store.events {
+            let when = e.isAllDay ? "All day" : "\(e.startDate.formatted(date: .omitted, time: .shortened))–\(e.endDate.formatted(date: .omitted, time: .shortened))"
+            print("\(when)  \(e.title ?? "")  [\(e.calendar.title)]")
+        }
+        if !store.events.isEmpty, !store.items.isEmpty { print("") }
+        emit(store.items)
+    case "task add":
         guard let title = args.first else { usage() }
         if let due, parseDate(due) == nil { print("Bad --due. Use YYYY-MM-DD or \"YYYY-MM-DD HH:mm\"."); exit(2) }
-        try reminders.add(title, to: list(named: listName), due: due.flatMap(parseDate))
-        await reminders.fetch(.list(list(named: listName) ?? reminders.store.defaultCalendarForNewReminders()!))
-        emit(reminders.items.filter { $0.title == title }.suffix(1).map { $0 })
-    case "list":
+        try store.add(title, to: list(named: listName), due: due.flatMap(parseDate))
+        await store.fetch(.list(list(named: listName) ?? store.ek.defaultCalendarForNewReminders()!))
+        emit(store.items.filter { $0.title == title }.suffix(1).map { $0 })
+    case "task list":
         if let name = args.first {
             guard let l = list(named: name) else { print("No list named \(name)."); exit(1) }
-            await reminders.fetch(.list(l))
+            await store.fetch(.list(l))
         } else {
-            await reminders.fetch(.today)
+            await store.fetch(.today)
         }
-        emit(reminders.items)
-    case "done":
-        guard let id = args.first, let r = reminders.reminder(id: id) else { print("No task with that id."); exit(1) }
+        emit(store.items)
+    case "task done":
+        guard let id = args.first, let r = store.reminder(id: id) else { print("No task with that id."); exit(1) }
         r.isCompleted = true
-        try reminders.save(r)
+        try store.save(r)
         print("Done: \(r.title ?? "")")
     default:
         usage()

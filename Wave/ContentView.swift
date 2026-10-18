@@ -2,7 +2,7 @@ import SwiftUI
 import EventKit
 
 struct ContentView: View {
-    @State private var reminders = Reminders()
+    @State private var store = Store()
     @State private var selection: Selection? = .today
     @State private var editing: EKReminder?
     @State private var newTitle = ""
@@ -12,18 +12,30 @@ struct ContentView: View {
             List(selection: $selection) {
                 Label("Today", systemImage: "sun.max").tag(Selection.today)
                 Section("Lists") {
-                    ForEach(reminders.lists, id: \.calendarIdentifier) { list in
+                    ForEach(store.lists, id: \.calendarIdentifier) { list in
                         Label(list.title, systemImage: "list.bullet").tag(Selection.list(list))
                     }
                 }
             }
         } detail: {
-            if !reminders.authorized {
+            if !store.authorized {
                 ContentUnavailableView("Reminders access needed", systemImage: "lock",
                     description: Text("Allow Wave in System Settings > Privacy & Security > Reminders."))
             } else {
                 List {
-                    ForEach(reminders.items) { r in
+                    if selection == .today, !store.events.isEmpty {
+                        Section("Events") {
+                            ForEach(store.events, id: \.self) { e in
+                                HStack {
+                                    Circle().fill(Color(cgColor: e.calendar.cgColor)).frame(width: 8, height: 8)
+                                    Text(e.isAllDay ? "All day" : e.startDate.formatted(date: .omitted, time: .shortened))
+                                        .foregroundStyle(.secondary).monospacedDigit().frame(width: 64, alignment: .leading)
+                                    Text(e.title ?? "")
+                                }
+                            }
+                        }
+                    }
+                    ForEach(store.items) { r in
                         HStack(alignment: .top) {
                             Button { complete(r) } label: { Image(systemName: "circle") }
                                 .buttonStyle(.plain)
@@ -45,36 +57,40 @@ struct ContentView: View {
                 .navigationTitle(title)
             }
         }
-        .task { await reminders.load(); await refresh() }
+        .task { await store.load(); await refresh() }
         .onChange(of: selection) { Task { await refresh() } }
         .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged)) { _ in Task { await refresh() } }
-        .sheet(item: $editing) { ReminderEditor(reminder: $0, reminders: reminders) }
+        .sheet(item: $editing) { ReminderEditor(reminder: $0, store: store) }
     }
 
     private var title: String {
         if case .list(let l) = selection { l.title } else { "Today" }
     }
 
-    private func refresh() async { await reminders.fetch(selection ?? .today) }
+    private func refresh() async {
+        let selection = selection ?? .today
+        await store.fetch(selection)
+        if selection == .today { await store.fetchEvents() }
+    }
 
     private func add() {
         guard !newTitle.isEmpty else { return }
         let list: EKCalendar? = if case .list(let l) = selection { l } else { nil }
-        try? reminders.add(newTitle, to: list)
+        try? store.add(newTitle, to: list)
         newTitle = ""
         Task { await refresh() }
     }
 
     private func complete(_ r: EKReminder) {
         r.isCompleted = true
-        try? reminders.save(r)
+        try? store.save(r)
         Task { await refresh() }
     }
 }
 
 struct ReminderEditor: View {
     let reminder: EKReminder
-    let reminders: Reminders
+    let store: Store
     @Environment(\.dismiss) private var dismiss
     @State private var title = ""
     @State private var notes = ""
@@ -119,7 +135,7 @@ struct ReminderEditor: View {
         reminder.dueDateComponents = hasDue
             ? Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: due) : nil
         reminder.recurrenceRules = (hasDue ? repeats : nil).map { [EKRecurrenceRule(recurrenceWith: $0, interval: 1, end: nil)] }
-        try? reminders.save(reminder)
+        try? store.save(reminder)
         dismiss()
     }
 }
