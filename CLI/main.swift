@@ -28,6 +28,8 @@ func usage() -> Never {
            wave task add <title> [--list <name>] [--due "YYYY-MM-DD[ HH:mm]"]
            wave task list [<list>]      (default: today)
            wave task done <id>
+           wave note add <title> [text]
+           wave note list [query]
     Add --json for machine-readable output.
     """)
     exit(2)
@@ -80,7 +82,7 @@ guard !args.isEmpty else { usage() }
 let listName = option("--list")
 let due = option("--due")
 var command = args.removeFirst()
-if command == "task" {
+if command == "task" || command == "note" {
     guard !args.isEmpty else { usage() }
     command += " " + args.removeFirst()
 }
@@ -88,11 +90,13 @@ if command == "task" {
 let store = Store()
 
 func run() async throws {
-    await store.load()
-    guard store.authorized else {
-        print("Reminders access denied (status \(EKEventStore.authorizationStatus(for: .reminder).rawValue))\(store.accessError.map { ": " + $0 } ?? "").")
-        print("Allow it in System Settings > Privacy & Security > Reminders, or run: tccutil reset Reminders")
-        exit(1)
+    if !command.hasPrefix("note") {
+        await store.load()
+        guard store.authorized else {
+            print("Reminders access denied (status \(EKEventStore.authorizationStatus(for: .reminder).rawValue))\(store.accessError.map { ": " + $0 } ?? "").")
+            print("Allow it in System Settings > Privacy & Security > Reminders, or run: tccutil reset Reminders")
+            exit(1)
+        }
     }
     func list(named name: String?) -> EKCalendar? { name.flatMap { n in store.lists.first { $0.title.caseInsensitiveCompare(n) == .orderedSame } } }
 
@@ -126,6 +130,16 @@ func run() async throws {
         r.isCompleted = true
         try store.save(r)
         print("Done: \(r.title ?? "")")
+    case "note add":
+        guard let title = args.first else { usage() }
+        let id = try await Notes().create(title: title, text: args.dropFirst().first ?? "")
+        if json { printJSON(["id": id, "title": title]) } else { print("Created: \(title)") }
+    case "note list":
+        let notes = Notes()
+        await notes.load(query: args.first ?? "")
+        if let error = notes.error { print(error); exit(1) }
+        if json { printJSON(notes.items.map { ["id": $0.id, "title": $0.title, "modified": iso.string(from: $0.modified)] }); return }
+        for n in notes.items { print("\(n.id)  \(n.title)  \(n.modified.formatted(date: .abbreviated, time: .shortened))") }
     default:
         usage()
     }

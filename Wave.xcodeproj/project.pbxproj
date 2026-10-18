@@ -199,6 +199,7 @@
 				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Wave shows your calendar events in Today.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Wave lists and creates your Apple Notes.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Wave manages your tasks through Reminders.";
 				PRODUCT_BUNDLE_IDENTIFIER = pro.wavestudio.wave.cli;
 				PRODUCT_MODULE_NAME = WaveCLI;
@@ -220,6 +221,7 @@
 				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Wave shows your calendar events in Today.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Wave lists and creates your Apple Notes.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Wave manages your tasks through Reminders.";
 				PRODUCT_BUNDLE_IDENTIFIER = pro.wavestudio.wave.cli;
 				PRODUCT_MODULE_NAME = WaveCLI;
@@ -363,6 +365,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Wave shows your calendar events in Today.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Wave lists and creates your Apple Notes.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Wave manages your tasks through Reminders.";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
@@ -390,6 +393,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Wave shows your calendar events in Today.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Wave lists and creates your Apple Notes.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Wave manages your tasks through Reminders.";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";

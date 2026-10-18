@@ -4,6 +4,7 @@ import Observation
 enum Selection: Hashable {
     case today
     case habits
+    case notes
     case list(EKCalendar)
 }
 
@@ -22,14 +23,14 @@ enum Selection: Hashable {
     }
 
     func fetch(_ selection: Selection) async {
-        if selection == .habits { return }
-        let predicate = switch selection {
+        let predicate: NSPredicate
+        switch selection {
         case .today:
-            ek.predicateForIncompleteReminders(withDueDateStarting: nil, ending: Calendar.current.endOfToday, calendars: nil)
+            predicate = ek.predicateForIncompleteReminders(withDueDateStarting: nil, ending: Calendar.current.endOfToday, calendars: nil)
         case .list(let list):
-            ek.predicateForIncompleteReminders(withDueDateStarting: nil, ending: nil, calendars: [list])
-        case .habits:
-            fatalError()
+            predicate = ek.predicateForIncompleteReminders(withDueDateStarting: nil, ending: nil, calendars: [list])
+        default:
+            return
         }
         let found = await withCheckedContinuation { k in
             ek.fetchReminders(matching: predicate) { k.resume(returning: $0 ?? []) }

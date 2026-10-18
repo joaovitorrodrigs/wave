@@ -12,6 +12,7 @@ struct ContentView: View {
             List(selection: $selection) {
                 Label("Today", systemImage: "sun.max").tag(Selection.today)
                 Label("Habits", systemImage: "checkmark.square").tag(Selection.habits)
+                Label("Notes", systemImage: "note.text").tag(Selection.notes)
                 Section("Lists") {
                     ForEach(store.lists, id: \.calendarIdentifier) { list in
                         Label(list.title, systemImage: "list.bullet").tag(Selection.list(list))
@@ -21,6 +22,8 @@ struct ContentView: View {
         } detail: {
             if selection == .habits {
                 HabitsView()
+            } else if selection == .notes {
+                NotesView()
             } else if !store.authorized {
                 ContentUnavailableView("Reminders access needed", systemImage: "lock",
                     description: Text("Allow Wave in System Settings > Privacy & Security > Reminders."))
