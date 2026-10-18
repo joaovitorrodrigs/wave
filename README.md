@@ -4,6 +4,7 @@ One native macOS app for your tasks, agenda, habits, notes and personal finances
 
 Wave is an interface over what your Mac already has: Reminders and Calendar
 (via EventKit), Apple Notes (via AppleScript), plus a local store for habits
+(HabitKit-style grid and streaks, in `~/Library/Application Support/Wave/`)
 and a read-only mirror of your bank through Banco MCP. Your data stays where
 it is and syncs to your iPhone through Apple's own apps.
 

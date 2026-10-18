@@ -17,7 +17,10 @@ No exceptions.
 - Notes live in Apple Notes, accessed via AppleScript: list, search, create.
   Editing opens Notes.app.
 - Habits: HabitKit-style. Name, color, icon, set of completed days, GitHub-style
-  grid, computed streak. Stored in SwiftData, local only, no iCloud.
+  grid, computed streak. Stored in SwiftData, local only, no iCloud, at
+  `~/Library/Application Support/Wave/wave.store`. App only: no CLI for habits until
+  someone asks Claude to check a habit (a second process writing the store needs
+  change notifications the app does not have yet).
 - Finances: read-only mirror of Banco MCP REST API (`api.mcp.ai/api/openfinance`).
   Balances and transactions, cached locally. No manual entry. API key in Keychain.
 - CLI `wave` ships inside the `.app` at `Contents/Helpers/wave` (not `MacOS/`: APFS is
