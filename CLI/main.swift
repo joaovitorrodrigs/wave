@@ -51,7 +51,11 @@ let command = args.removeFirst()
 
 let reminders = Reminders()
 await reminders.load()
-guard reminders.authorized else { print("Reminders access denied."); exit(1) }
+guard reminders.authorized else {
+    print("Reminders access denied (status \(EKEventStore.authorizationStatus(for: .reminder).rawValue))\(reminders.accessError.map { ": " + $0 } ?? "").")
+    print("Allow it in System Settings > Privacy & Security > Reminders, or run: tccutil reset Reminders")
+    exit(1)
+}
 func list(named name: String?) -> EKCalendar? { name.flatMap { n in reminders.lists.first { $0.title.caseInsensitiveCompare(n) == .orderedSame } } }
 
 switch command {

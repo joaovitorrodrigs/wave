@@ -19,8 +19,8 @@
 		000000000000000150000000 /* Embed CLI */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 6;
+			dstPath = Helpers;
+			dstSubfolderSpec = 1;
 			files = (
 				000000000000000000000221 /* wave in Embed CLI */,
 			);

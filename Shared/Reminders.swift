@@ -11,9 +11,11 @@ enum Selection: Hashable {
     var lists: [EKCalendar] = []
     var items: [EKReminder] = []
     var authorized = false
+    var accessError: String?
 
     func load() async {
-        authorized = (try? await store.requestFullAccessToReminders()) ?? false
+        do { authorized = try await store.requestFullAccessToReminders() }
+        catch { accessError = "\(error)" }
         lists = store.calendars(for: .reminder).sorted { $0.title < $1.title }
     }
 

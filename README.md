@@ -26,7 +26,7 @@ and notes for you.
 The `.app` ships a `wave` binary. Put it on your PATH once:
 
 ```
-ln -s /Applications/Wave.app/Contents/MacOS/wave /usr/local/bin/wave
+ln -s /Applications/Wave.app/Contents/Helpers/wave /usr/local/bin/wave
 ```
 
 ```
