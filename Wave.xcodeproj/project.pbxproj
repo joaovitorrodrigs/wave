@@ -19,7 +19,7 @@
 		000000000000000150000000 /* Embed CLI */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = Helpers;
+			dstPath = Contents/Helpers;
 			dstSubfolderSpec = 1;
 			files = (
 				000000000000000000000221 /* wave in Embed CLI */,
@@ -92,7 +92,7 @@
 /* Begin PBXNativeTarget section */
 		000000000000000200000000 /* wave */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 000000000000000210000000 /* Build configuration list for PBXNativeTarget "wave" */;
+			buildConfigurationList = 000000000000000210000000 /* Build configuration list for PBXNativeTarget "WaveCLI" */;
 			buildPhases = (
 				000000000000000220000000 /* Sources */,
 				000000000000000230000000 /* Frameworks */,
@@ -105,8 +105,8 @@
 				000000000000000000000011 /* CLI */,
 				000000000000000000000012 /* Shared */,
 			);
-			name = wave;
-			productName = wave;
+			name = WaveCLI;
+			productName = WaveCLI;
 			productReference = 000000000000000000000220 /* wave */;
 			productType = "com.apple.product-type.tool";
 		};
@@ -190,7 +190,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		000000000000000211000000 /* Debug configuration for PBXNativeTarget "wave" */ = {
+		000000000000000211000000 /* Debug configuration for PBXNativeTarget "WaveCLI" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -198,7 +198,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Wave manages your tasks through Reminders.";
 				PRODUCT_BUNDLE_IDENTIFIER = pro.wavestudio.wave.cli;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = WaveCLI;
+				PRODUCT_NAME = wave;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -207,7 +208,7 @@
 			};
 			name = Debug;
 		};
-		000000000000000212000000 /* Release configuration for PBXNativeTarget "wave" */ = {
+		000000000000000212000000 /* Release configuration for PBXNativeTarget "WaveCLI" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -215,7 +216,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Wave manages your tasks through Reminders.";
 				PRODUCT_BUNDLE_IDENTIFIER = pro.wavestudio.wave.cli;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = WaveCLI;
+				PRODUCT_NAME = wave;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -405,11 +407,11 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		000000000000000210000000 /* Build configuration list for PBXNativeTarget "wave" */ = {
+		000000000000000210000000 /* Build configuration list for PBXNativeTarget "WaveCLI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				000000000000000211000000 /* Debug configuration for PBXNativeTarget "wave" */,
-				000000000000000212000000 /* Release configuration for PBXNativeTarget "wave" */,
+				000000000000000211000000 /* Debug configuration for PBXNativeTarget "WaveCLI" */,
+				000000000000000212000000 /* Release configuration for PBXNativeTarget "WaveCLI" */,
 			);
 			defaultConfigurationName = Release;
 		};
