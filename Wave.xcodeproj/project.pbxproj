@@ -7,10 +7,46 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		000000000000000000000220 /* wave */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = wave; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000120 /* Wave.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wave.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXBuildFile section */
+		000000000000000000000221 /* wave in Embed CLI */ = {isa = PBXBuildFile; fileRef = 000000000000000000000220 /* wave */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		000000000000000150000000 /* Embed CLI */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				000000000000000000000221 /* wave in Embed CLI */,
+			);
+			name = "Embed CLI";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		000000000000000300000000 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000200000000 /* wave */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		000000000000000000000011 /* CLI */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = CLI;
+			sourceTree = "<group>";
+		};
+		000000000000000000000012 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		000000000000000000000010 /* Wave */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Wave;
@@ -19,6 +55,11 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		000000000000000230000000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
 		000000000000000130000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
@@ -31,6 +72,8 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000010 /* Wave */,
+				000000000000000000000011 /* CLI */,
+				000000000000000000000012 /* Shared */,
 				000000000000000000000020 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -39,6 +82,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000120 /* Wave.app */,
+				000000000000000000000220 /* wave */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -46,6 +90,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		000000000000000200000000 /* wave */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000210000000 /* Build configuration list for PBXNativeTarget "wave" */;
+			buildPhases = (
+				000000000000000220000000 /* Sources */,
+				000000000000000230000000 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				000000000000000000000011 /* CLI */,
+				000000000000000000000012 /* Shared */,
+			);
+			name = wave;
+			productName = wave;
+			productReference = 000000000000000000000220 /* wave */;
+			productType = "com.apple.product-type.tool";
+		};
 		000000000000000100000000 /* Wave */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 000000000000000110000000 /* Build configuration list for PBXNativeTarget "Wave" */;
@@ -53,11 +117,16 @@
 				000000000000000120000000 /* Sources */,
 				000000000000000130000000 /* Frameworks */,
 				000000000000000140000000 /* Resources */,
+				000000000000000150000000 /* Embed CLI */,
 			);
 			buildRules = (
 			);
+			dependencies = (
+				000000000000000300000000 /* PBXTargetDependency */,
+			);
 			fileSystemSynchronizedGroups = (
 				000000000000000000000010 /* Wave */,
+				000000000000000000000012 /* Shared */,
 			);
 			name = Wave;
 			productName = Wave;
@@ -94,6 +163,7 @@
 			projectRoot = "";
 			targets = (
 				000000000000000100000000 /* Wave */,
+				000000000000000200000000 /* wave */,
 			);
 		};
 /* End PBXProject section */
@@ -107,6 +177,11 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		000000000000000220000000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 		000000000000000120000000 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
@@ -115,6 +190,40 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		000000000000000211000000 /* Debug configuration for PBXNativeTarget "wave" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Wave manages your tasks through Reminders.";
+				PRODUCT_BUNDLE_IDENTIFIER = pro.wavestudio.wave.cli;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		000000000000000212000000 /* Release configuration for PBXNativeTarget "wave" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Wave manages your tasks through Reminders.";
+				PRODUCT_BUNDLE_IDENTIFIER = pro.wavestudio.wave.cli;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		000000000000000011000000 /* Debug configuration for PBXProject "Wave" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -296,6 +405,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		000000000000000210000000 /* Build configuration list for PBXNativeTarget "wave" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000211000000 /* Debug configuration for PBXNativeTarget "wave" */,
+				000000000000000212000000 /* Release configuration for PBXNativeTarget "wave" */,
+			);
+			defaultConfigurationName = Release;
+		};
 		000000000000000010000000 /* Build configuration list for PBXProject "Wave" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

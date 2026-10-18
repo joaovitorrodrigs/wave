@@ -1,4 +1,5 @@
 import EventKit
+import Observation
 
 enum Selection: Hashable {
     case today
@@ -29,12 +30,15 @@ enum Selection: Hashable {
         items = found.sorted { ($0.dueDate ?? .distantFuture) < ($1.dueDate ?? .distantFuture) }
     }
 
-    func add(_ title: String, to list: EKCalendar?) throws {
+    func add(_ title: String, to list: EKCalendar?, due: Date? = nil) throws {
         let r = EKReminder(eventStore: store)
         r.title = title
         r.calendar = list ?? store.defaultCalendarForNewReminders()
+        r.dueDateComponents = due.map { Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: $0) }
         try store.save(r, commit: true)
     }
+
+    func reminder(id: String) -> EKReminder? { store.calendarItem(withIdentifier: id) as? EKReminder }
 
     func save(_ r: EKReminder) throws { try store.save(r, commit: true) }
 }
