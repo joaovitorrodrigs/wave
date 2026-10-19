@@ -31,6 +31,9 @@ ln -sf /Applications/Wave.app/Contents/Helpers/wave /opt/homebrew/bin/wave
 ```
 
 First launch asks for Reminders access. The `wave` command asks once more, for itself.
+For bank data, create a read-only key at https://app.mcp.ai/settings/api-keys and paste it in
+Settings (⌘,). It lives in your Keychain; the last fetch is cached in
+`~/Library/Application Support/Wave/finance.json`.
 
 ## Command line
 

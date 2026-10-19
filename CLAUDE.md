@@ -21,8 +21,11 @@ No exceptions.
   `~/Library/Application Support/Wave/wave.store`. App only: no CLI for habits until
   someone asks Claude to check a habit (a second process writing the store needs
   change notifications the app does not have yet).
-- Finances: read-only mirror of Banco MCP REST API (`api.mcp.ai/api/openfinance`).
-  Balances and transactions, cached locally. No manual entry. API key in Keychain.
+- Finances: read-only mirror of Banco MCP REST API (`api.mcp.ai/api/openfinance`, all
+  POST with JSON bodies; `GET /_endpoints` lists them). Accounts with balances and the last
+  30 days of transactions, cached in `~/Library/Application Support/Wave/finance.json`.
+  No manual entry. API key in the Keychain, service `pro.wavestudio.wave`, account
+  `bancomcp`, set from Settings (⌘,). App only, no CLI, same reasoning as habits.
 - CLI `wave` ships inside the `.app` at `Contents/Helpers/wave` (not `MacOS/`: APFS is
   case-insensitive and `wave` would overwrite the app binary `Wave`). Target is `WaveCLI`,
   module `WaveCLI`, product `wave`, for the same reason.

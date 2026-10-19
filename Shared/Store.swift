@@ -5,6 +5,7 @@ enum Selection: Hashable {
     case today
     case habits
     case notes
+    case finances
     case list(EKCalendar)
 }
 

@@ -13,5 +13,6 @@ import SwiftData
             ContentView()
         }
         .modelContainer(Habit.container)
+        Settings { SettingsView() }
     }
 }
