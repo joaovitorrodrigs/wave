@@ -55,7 +55,7 @@ struct MenuBarPanel: View {
             }
 
             if !habits.isEmpty {
-                Eyebrow(text: "Habits").font(.wave(14))
+                Text("Habits").font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6))
                 FlowChips(habits: habits)
             }
         }
