@@ -64,7 +64,7 @@ struct Palette: View {
 
     private func label(_ hit: Hit) -> String {
         switch hit {
-        case .page(let p): "Go to \(p.rawValue)"
+        case .page(let p): p.rawValue
         case .task(let r): "Task · \(r.title ?? "")"
         case .note(let n): "Note · \(n.title)"
         case .habit(let h): "Habit · \(h.name)\(h.isDone(.now) ? " (done today, click to undo)" : " (mark today)")"

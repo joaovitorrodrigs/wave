@@ -35,10 +35,12 @@ struct Dock: View {
                             .background(item.active ? Theme.violet : Color.clear, in: RoundedRectangle(cornerRadius: 14))
                     }
                     .buttonStyle(DockPress())
+                    .onHover { if $0 { hovered = item.id } }
+                    // The layout slot keeps the dock's height: only the width flows, the icon overflows upward.
+                    .frame(width: size, height: base, alignment: .bottom)
                     .background(GeometryReader { g in
                         Color.clear.preference(key: DockFrames.self, value: [item.id: g.frame(in: .named("dock"))])
                     })
-                    .onHover { if $0 { hovered = item.id } }
                     .overlay(alignment: .top) {
                         if hovered == item.id {
                             Text(item.label).font(.wave(13, .medium)).foregroundStyle(Theme.ink)
@@ -79,9 +81,10 @@ struct Dock: View {
     /// The one highlight, behind every button, moved by springs. Never mounted or unmounted.
     private var highlight: some View {
         let frame = hovered.flatMap { frames[$0] }
+        let size = frame?.width ?? base
         return RoundedRectangle(cornerRadius: 14).fill(Theme.paper.opacity(0.14))
-            .frame(width: frame?.width ?? base, height: frame?.height ?? base)
-            .position(x: frame?.midX ?? -100, y: frame?.midY ?? 0)
+            .frame(width: size, height: size)
+            .position(x: frame?.midX ?? -100, y: (frame?.maxY ?? 0) - size / 2)
             .opacity(frame == nil ? 0 : 1)
             .animation(reduce ? nil : .spring(duration: 0.3, bounce: 0.2), value: frames)
             .animation(.easeOut(duration: 0.15), value: hovered)
