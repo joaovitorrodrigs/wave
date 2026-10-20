@@ -141,14 +141,17 @@ struct TimeRow: View {
     @Binding var date: Date
 
     var body: some View {
-        HStack(spacing: 10) {
-            TimeStepper(value: hour, range: 0...23, step: 1)
-            Text(":").font(.wave(20, .medium))
-            TimeStepper(value: minute, range: 0...55, step: 5)
-            Spacer()
-            ForEach([9, 12, 18], id: \.self) { h in
-                Button { set(hour: h, minute: 0) } label: { Chip(text: "\(h):00", selected: hour.wrappedValue == h && minute.wrappedValue == 0) }
-                    .buttonStyle(PressStyle())
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                TimeStepper(value: hour, range: 0...23, step: 1)
+                Text(":").font(.wave(20, .medium))
+                TimeStepper(value: minute, range: 0...55, step: 5)
+            }
+            HStack(spacing: 8) {
+                ForEach([9, 12, 18], id: \.self) { h in
+                    Button { set(hour: h, minute: 0) } label: { Chip(text: String(format: "%02d:00", h), selected: hour.wrappedValue == h && minute.wrappedValue == 0) }
+                        .buttonStyle(PressStyle())
+                }
             }
         }
     }

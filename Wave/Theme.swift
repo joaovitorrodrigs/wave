@@ -183,7 +183,7 @@ struct Chip: View {
     var onDark = false
     var tint: Color? = nil   // filled with a habit's color, paper text
     var body: some View {
-        Text(text).font(.wave(14))
+        Text(text).font(.wave(14)).lineLimit(1).fixedSize()
             .padding(.horizontal, 16).padding(.vertical, 8)
             .foregroundStyle(selected || onDark || tint != nil ? Theme.paper : Theme.ink.opacity(0.7))
             .background(tint ?? (selected ? Theme.ink : onDark ? Color.clear : Theme.chip), in: RoundedRectangle(cornerRadius: Theme.radiusButton))
