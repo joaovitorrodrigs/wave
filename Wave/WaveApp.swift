@@ -1,11 +1,20 @@
 import SwiftUI
 import SwiftData
+import AppKit
 
-@main struct WaveApp: App {
-    init() {
-        Theme.registerFont()
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        StatusBar.install()
         QuickAdd.install()
         Morning.start()
+    }
+}
+
+@main struct WaveApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
+
+    init() {
+        Theme.registerFont()
         #if DEBUG
         Habit.selfCheck()
         #endif
@@ -32,9 +41,5 @@ import SwiftData
                 }
             }
         }
-
-        MenuBarExtra("Wave", image: "MenuBarIcon") { MenuBarPanel() }
-            .menuBarExtraStyle(.window)
-            .modelContainer(Database.container)
     }
 }

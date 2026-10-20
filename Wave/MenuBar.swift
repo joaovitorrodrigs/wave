@@ -3,26 +3,67 @@ import SwiftData
 import EventKit
 import AppKit
 
-/// Strips the system popover chrome from the menu bar window: transparent, borderless, shadow from our own shape.
-struct ClearWindow: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSView { Configurator() }
-    func updateNSView(_ view: NSView, context: Context) {}
+/// Our own status item and popover: a borderless, transparent panel under the menu bar glyph, sized to its
+/// SwiftUI content, closed by a click anywhere else. No system chrome at all.
+enum StatusBar {
+    private static var item: NSStatusItem?
+    private static var panel: NSPanel?
+    private static var monitor: Any?
+    private static var resizeObserver: Any?
 
-    final class Configurator: NSView {
-        override func viewDidMoveToWindow() {
-            super.viewDidMoveToWindow()
-            guard let window else { return }
-            window.isOpaque = false
-            window.backgroundColor = .clear
-            window.hasShadow = true
-            if let frame = window.contentView?.superview {
-                frame.wantsLayer = true
-                frame.layer?.borderWidth = 0
-                frame.layer?.backgroundColor = NSColor.clear.cgColor
-                frame.subviews.compactMap { $0 as? NSVisualEffectView }.forEach { $0.isHidden = true }
-            }
-            window.invalidateShadow()
-        }
+    static func install() {
+        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        item.button?.image = NSImage(named: "MenuBarIcon")
+        item.button?.image?.isTemplate = true
+        item.button?.target = Trampoline.shared
+        item.button?.action = #selector(Trampoline.toggle)
+        self.item = item
+    }
+
+    static func toggle() {
+        if let panel, panel.isVisible { hide() } else { show() }
+    }
+
+    static func show() {
+        hide()
+        let host = NSHostingView(rootView: MenuBarPanel().modelContainer(Database.container))
+        host.sizingOptions = [.preferredContentSize]
+        let p = KeyPanel(contentRect: NSRect(origin: .zero, size: host.fittingSize),
+                         styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+        p.isOpaque = false
+        p.backgroundColor = .clear
+        p.hasShadow = true
+        p.level = .popUpMenu
+        p.isReleasedWhenClosed = false
+        p.hidesOnDeactivate = false
+        p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
+        p.contentView = host
+        panel = p
+        place()
+        p.makeKeyAndOrderFront(nil)
+        resizeObserver = NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification, object: p, queue: .main) { _ in place() }
+        monitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { _ in hide() }
+    }
+
+    /// Centered under the glyph, top edge just below the menu bar, however tall the content gets.
+    private static func place() {
+        guard let panel, let button = item?.button, let window = button.window else { return }
+        let anchor = window.convertToScreen(button.convert(button.bounds, to: nil))
+        panel.setFrameOrigin(NSPoint(x: anchor.midX - panel.frame.width / 2, y: anchor.minY - panel.frame.height - 6))
+    }
+
+    static func hide() {
+        panel?.orderOut(nil)
+        panel = nil
+        if let monitor { NSEvent.removeMonitor(monitor) }
+        monitor = nil
+        if let resizeObserver { NotificationCenter.default.removeObserver(resizeObserver) }
+        resizeObserver = nil
+    }
+
+    final class Trampoline: NSObject {
+        static let shared = Trampoline()
+        @objc func toggle() { StatusBar.toggle() }
     }
 }
 
@@ -39,9 +80,11 @@ struct MenuBarPanel: View {
                 Text(Date.now.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())).font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6))
                 Spacer()
                 Button {
+                    StatusBar.hide()
                     NSApp.activate(ignoringOtherApps: true)
                     NSApp.windows.first { $0.canBecomeMain }?.makeKeyAndOrderFront(nil)
                 } label: { Chip(text: "Open Wave", selected: true) }.buttonStyle(PressStyle())
+                Button("") { StatusBar.hide() }.keyboardShortcut(.cancelAction).opacity(0).frame(width: 0, height: 0)
             }
 
             if !store.events.isEmpty {
@@ -86,8 +129,6 @@ struct MenuBarPanel: View {
         .padding(20)
         .frame(width: 380)
         .background(Theme.paper, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
-        .padding(8)
-        .background(ClearWindow())
         .font(.wave(15))
         .foregroundStyle(Theme.ink)
         .preferredColorScheme(Theme.scheme(theme))
