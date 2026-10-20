@@ -37,7 +37,8 @@ struct HabitsPage: View {
     }
 }
 
-/// The service card: `rounded-3xl p-1.5` frame with two paper blocks. Done today flips it to ink + violet.
+/// The service card: `rounded-3xl p-1.5` frame with two paper blocks. Done today flips it to the dark
+/// process-card style (`#121212` blocks on an ink frame) so the habit's own color carries the grid and icon.
 struct HabitCard: View {
     let habit: Habit
     @Environment(UI.self) private var ui
@@ -46,6 +47,7 @@ struct HabitCard: View {
     var body: some View {
         let done = habit.isDone(.now)
         let fg = done ? Theme.paper : Theme.ink
+        let block = done ? Theme.darkCard : Theme.paper
         VStack(spacing: 6) {
             HStack(spacing: 12) {
                 Text(habit.name).font(.wave(20, .medium)).tracking(-0.5).lineLimit(1)
@@ -55,29 +57,31 @@ struct HabitCard: View {
                     ("Delete", true, { context.delete(habit) }),
                 ])
                 Button { habit.toggle(.now) } label: {
-                    Icon(habit.icon, size: 24, color: done ? Theme.violet : habit.tint, weight: .fill)
+                    Icon(habit.icon, size: 24, color: done ? Theme.paper : habit.tint, weight: .fill)
                         .frame(width: 44, height: 44)
-                        .background(done ? Theme.paper : habit.tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 16))
+                        .background(done ? habit.tint : habit.tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 16))
                 }
                 .buttonStyle(PressStyle())
             }
             .padding(.horizontal, 24).padding(.vertical, 12)
-            .cardBlock(done ? Theme.violet : Theme.paper)
+            .cardBlock(block)
+            .overlay { if done { RoundedRectangle(cornerRadius: Theme.radiusBlock).stroke(Theme.paper.opacity(0.06)) } }
 
             VStack(alignment: .leading, spacing: 20) {
                 Text(habit.streak == 0 ? "No streak yet. Today is a good day to start."
                      : "\(habit.streak) day streak. Keep the row going.")
-                    .foregroundStyle(fg.opacity(done ? 0.8 : 0.6)).lineSpacing(4)
+                    .foregroundStyle(fg.opacity(done ? 0.5 : 0.6)).lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)
                 HabitGrid(habit: habit, onDark: done)
                 HStack(spacing: 8) {
-                    Chip(text: done ? "Done today" : "Open", onDark: done)
-                    Chip(text: "\(habit.days.count) days total", onDark: done)
+                    Chip(text: done ? "Done today" : "Open", onDark: done, tint: done ? habit.tint : nil)
+                    Chip(text: "\(habit.days.count) day\(habit.days.count == 1 ? "" : "s") total", onDark: done)
                 }
             }
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .cardBlock(done ? Theme.violet : Theme.paper)
+            .cardBlock(block)
+            .overlay { if done { RoundedRectangle(cornerRadius: Theme.radiusBlock).stroke(Theme.paper.opacity(0.06)) } }
         }
         .foregroundStyle(fg)
         .cardFrame(dark: done)
@@ -102,8 +106,8 @@ struct HabitGrid: View {
                         let day = cal.date(byAdding: .day, value: w * 7 + d, to: start)!
                         RoundedRectangle(cornerRadius: 2.5)
                             .fill(day > today ? Color.clear
-                                  : habit.isDone(day) ? (onDark ? Theme.paper : habit.tint)
-                                  : (onDark ? Theme.paper.opacity(0.18) : Theme.ink.opacity(0.08)))
+                                  : habit.isDone(day) ? habit.tint
+                                  : (onDark ? Theme.paper.opacity(0.12) : Theme.ink.opacity(0.08)))
                             .frame(width: 12, height: 12)
                             .onTapGesture { if day <= today { habit.toggle(day) } }
                     }

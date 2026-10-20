@@ -162,13 +162,14 @@ struct Chip: View {
     let text: String
     var selected = false
     var onDark = false
+    var tint: Color? = nil   // filled with a habit's color, paper text
     var body: some View {
         Text(text).font(.wave(14))
             .padding(.horizontal, 16).padding(.vertical, 8)
-            .foregroundStyle(selected || onDark ? Theme.paper : Theme.ink.opacity(0.7))
-            .background(selected ? Theme.ink : onDark ? Color.clear : Theme.chip, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
+            .foregroundStyle(selected || onDark || tint != nil ? Theme.paper : Theme.ink.opacity(0.7))
+            .background(tint ?? (selected ? Theme.ink : onDark ? Color.clear : Theme.chip), in: RoundedRectangle(cornerRadius: Theme.radiusButton))
             .overlay {
-                if onDark, !selected { RoundedRectangle(cornerRadius: Theme.radiusButton).stroke(Theme.paper.opacity(0.4)) }
+                if onDark, !selected, tint == nil { RoundedRectangle(cornerRadius: Theme.radiusButton).stroke(Theme.paper.opacity(0.4)) }
             }
     }
 }
