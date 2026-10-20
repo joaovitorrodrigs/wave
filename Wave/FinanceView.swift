@@ -24,7 +24,7 @@ struct FinancePage: View {
                             Eyebrow(text: "Accounts", onDark: true)
                             Spacer()
                             if finance.loading {
-                                ProgressView().controlSize(.small).tint(Theme.paper)
+                                Spinner(onDark: true)
                             } else if let fetched = finance.fetched {
                                 Text("updated \(fetched, format: .relative(presentation: .named))").font(.wave(14)).foregroundStyle(Theme.paper.opacity(0.4))
                             }
@@ -110,23 +110,19 @@ struct TransactionRow: View {
     }
 }
 
-struct SettingsView: View {
+struct SettingsPanel: View {
     @State private var key = Keychain.get(Finance.keyAccount) ?? ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Banco MCP").font(.wave(26, .medium)).tracking(-0.6)
+            PanelTitle(text: "Settings")
+            Text("Banco MCP").font(.wave(16, .medium)).padding(.top, 8)
             SecureField("sk_live_…", text: $key).waveField()
             Text("Read-only access to your bank accounts through Banco MCP (Open Finance Brasil). Kept in the macOS Keychain.")
                 .font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(3)
             Link("Create a key at app.mcp.ai", destination: URL(string: "https://app.mcp.ai/settings/api-keys")!).font(.wave(14, .medium))
         }
-        .padding(32)
-        .frame(width: 480)
-        .font(.wave(16))
-        .foregroundStyle(Theme.ink)
-        .background(Theme.paper)
-        .preferredColorScheme(.light)
+        .panel(width: 480)
         .onChange(of: key) { Keychain.set(key, account: Finance.keyAccount) }
     }
 }

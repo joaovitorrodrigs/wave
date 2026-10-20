@@ -6,36 +6,36 @@ enum Page: String, CaseIterable {
 }
 
 struct ContentView: View {
+    @State private var ui = UI.shared
     @State private var store = Store()
     @State private var notes = Notes()
     @State private var finance = Finance()
-    @State private var page: Page = .home
     @State private var list: EKCalendar?
-    @State private var editing: EKReminder?
-    @State private var addingTask = false
-    @State private var addingHabit = false
-    @State private var addingNote = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            NavBar(page: $page, button: buttonTitle, icon: buttonIcon, action: primaryAction)
-            ScrollView {
-                Group {
-                    switch page {
-                    case .home: HomePage(store: store, notes: notes, finance: finance, page: $page, editing: $editing)
-                    case .today: TodayPage(store: store, list: $list, editing: $editing)
-                    case .habits: HabitsPage(adding: $addingHabit)
-                    case .notes: NotesPage(notes: notes)
-                    case .finances: FinancePage(finance: finance)
+        ZStack {
+            VStack(spacing: 0) {
+                NavBar(button: buttonTitle, icon: ui.page == .finances ? "arrow.clockwise" : "plus", action: primaryAction)
+                ScrollView {
+                    Group {
+                        switch ui.page {
+                        case .home: HomePage(store: store, notes: notes, finance: finance)
+                        case .today: TodayPage(store: store, list: $list)
+                        case .habits: HabitsPage()
+                        case .notes: NotesPage(notes: notes)
+                        case .finances: FinancePage(finance: finance)
+                        }
                     }
+                    .id(ui.page)
+                    .frame(maxWidth: 1200)
+                    .padding(.horizontal, 40).padding(.top, 32).padding(.bottom, 96)
+                    .frame(maxWidth: .infinity)
                 }
-                .id(page)
-                .frame(maxWidth: 1200)
-                .padding(.horizontal, 40).padding(.top, 32).padding(.bottom, 96)
-                .frame(maxWidth: .infinity)
+                .scrollIndicators(.hidden)
             }
-            .scrollIndicators(.hidden)
+            ModalHost(store: store, notes: notes, finance: finance)
         }
+        .environment(ui)
         .background(Theme.paper)
         .font(.wave(16))
         .foregroundStyle(Theme.ink)
@@ -45,14 +45,10 @@ struct ContentView: View {
         .task { await store.load(); await refresh() }
         .onChange(of: list) { Task { await refresh() } }
         .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged)) { _ in Task { await refresh() } }
-        .sheet(item: $editing) { ReminderEditor(reminder: $0, store: store) }
-        .sheet(isPresented: $addingTask) { NewTaskSheet(store: store, list: list) }
-        .sheet(isPresented: $addingHabit) { HabitEditor(habit: nil) }
-        .sheet(isPresented: $addingNote) { NoteEditor(notes: notes) }
     }
 
     private var buttonTitle: String {
-        switch page {
+        switch ui.page {
         case .home, .today: "New task"
         case .habits: "New habit"
         case .notes: "New note"
@@ -60,15 +56,8 @@ struct ContentView: View {
         }
     }
 
-    private var buttonIcon: String { page == .finances ? "arrow.clockwise" : "plus" }
-
     private func primaryAction() {
-        switch page {
-        case .home, .today: addingTask = true
-        case .habits: addingHabit = true
-        case .notes: addingNote = true
-        case .finances: Task { await finance.refresh() }
-        }
+        if ui.page == .finances { Task { await finance.refresh() } } else { ui.open(ui.newItem) }
     }
 
     private func refresh() async {
@@ -78,38 +67,57 @@ struct ContentView: View {
     }
 }
 
-/// The site's navbar: brand left, links centered, ink button right. Sits under the hidden title bar.
+/// The site's navbar: brand left, links centered, settings and the ink button right. Sits under the hidden title bar.
 struct NavBar: View {
-    @Binding var page: Page
     let button: String
     let icon: String
     let action: () -> Void
+    @Environment(UI.self) private var ui
 
     var body: some View {
         ZStack {
             HStack(spacing: 32) {
                 ForEach(Page.allCases, id: \.self) { p in
-                    Button { page = p } label: {
-                        Text(p.rawValue).font(.wave(16)).foregroundStyle(Theme.ink.opacity(page == p ? 1 : 0.7))
-                    }
-                    .buttonStyle(.plain)
+                    NavLink(title: p.rawValue, active: ui.page == p) { ui.page = p }
                 }
             }
-            HStack {
+            HStack(spacing: 12) {
                 Text("Wave").font(.wave(20, .semibold)).tracking(-0.5)
                 Spacer()
+                Button { ui.open(.palette) } label: { navIcon("magnifyingglass") }.buttonStyle(PressStyle())
+                Button { ui.open(.settings) } label: { navIcon("gearshape.fill") }.buttonStyle(PressStyle())
                 PrimaryButton(title: button, icon: icon, action: action)
             }
         }
         .padding(.leading, 96).padding(.trailing, 40)
         .frame(height: 72)
     }
+
+    private func navIcon(_ name: String) -> some View {
+        Image(systemName: name).font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.ink)
+            .frame(width: 40, height: 40).background(Theme.chip, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
+    }
+}
+
+struct NavLink: View {
+    let title: String
+    let active: Bool
+    let action: () -> Void
+    @State private var hover = false
+    var body: some View {
+        Button(action: action) {
+            Text(title).font(.wave(16)).foregroundStyle(Theme.ink.opacity(active || hover ? 1 : 0.7))
+        }
+        .buttonStyle(.plain)
+        .onHover { hover = $0 }
+        .animation(.easeOut(duration: 0.2), value: hover)
+    }
 }
 
 struct TodayPage: View {
     let store: Store
     @Binding var list: EKCalendar?
-    @Binding var editing: EKReminder?
+    @Environment(UI.self) private var ui
     @State private var newTitle = ""
 
     var body: some View {
@@ -151,8 +159,7 @@ struct TodayPage: View {
             Eyebrow(text: list == nil ? "Tasks" : list!.title).padding(.top, 56).rise(0.2)
             LazyVStack(spacing: 12) {
                 ForEach(Array(store.items.enumerated()), id: \.element.id) { i, r in
-                    TaskRow(reminder: r, complete: { complete(r) }, open: { editing = r })
-                        .rise(0.25 + Double(min(i, 8)) * 0.05)
+                    TaskRow(reminder: r, store: store, reload: reload).rise(0.25 + Double(min(i, 8)) * 0.05)
                 }
                 HStack(spacing: 16) {
                     Image(systemName: "plus").font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.ink.opacity(0.4))
@@ -177,25 +184,22 @@ struct TodayPage: View {
         Button { list = calendar } label: { Chip(text: title, selected: list == calendar) }.buttonStyle(PressStyle())
     }
 
+    private func reload() { Task { await store.fetch(list.map { .list($0) } ?? .today) } }
+
     private func add() {
         guard !newTitle.isEmpty else { return }
         try? store.add(newTitle, to: list)
         newTitle = ""
-        Task { await store.fetch(list.map { .list($0) } ?? .today) }
-    }
-
-    private func complete(_ r: EKReminder) {
-        r.isCompleted = true
-        try? store.save(r)
-        Task { await store.fetch(list.map { .list($0) } ?? .today) }
+        reload()
     }
 }
 
 /// The experience row: `rounded-btn px-8 py-4 bg-ink/[0.04]`, violet with a long shadow when due today.
 struct TaskRow: View {
     let reminder: EKReminder
-    let complete: () -> Void
-    let open: () -> Void
+    let store: Store
+    var reload: () -> Void = {}
+    @Environment(UI.self) private var ui
     @State private var hover = false
 
     var body: some View {
@@ -210,109 +214,150 @@ struct TaskRow: View {
                     .frame(width: 22, height: 22)
             }
             .buttonStyle(.plain)
+            if reminder.priority > 0 {
+                Text(String(repeating: "!", count: reminder.priority == 1 ? 3 : reminder.priority == 5 ? 2 : 1))
+                    .font(.wave(20, .semibold)).foregroundStyle(today ? Theme.paper : Theme.violet)
+            }
             Text(reminder.title ?? "").font(.wave(20, .medium)).tracking(-0.5).lineLimit(1)
+            if reminder.hasAlarms { Image(systemName: "bell.fill").font(.system(size: 12, weight: .bold)).foregroundStyle(fg.opacity(0.5)) }
+            if reminder.hasRecurrenceRules { Image(systemName: "repeat").font(.system(size: 12, weight: .bold)).foregroundStyle(fg.opacity(0.5)) }
             Spacer()
             Text(reminder.calendar.title).foregroundStyle(fg.opacity(today ? 0.8 : 0.5))
             if let due {
-                Text(due.formatted(today ? .dateTime.hour().minute() : .dateTime.day().month(.abbreviated).hour().minute()))
+                Text(dueText(due, today: today))
                     .foregroundStyle(overdue ? Theme.violet : fg.opacity(today ? 0.8 : 0.5))
                     .monospacedDigit().frame(width: 130, alignment: .trailing)
             }
+            MenuButton(onDark: today, items: [
+                ("Edit", false, { ui.open(.editTask(reminder)) }),
+                ("Delete", true, { try? store.delete(reminder); reload() }),
+            ])
+            .opacity(hover ? 1 : 0)
         }
         .foregroundStyle(fg)
-        .padding(.horizontal, 32).padding(.vertical, 16)
+        .padding(.horizontal, 32).padding(.vertical, 12)
         .background(today ? Theme.violet : Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
         .shadow(color: Theme.ink.opacity(today ? 0.25 : 0), radius: 16, x: 16, y: 24)
         .contentShape(Rectangle())
-        .onTapGesture(perform: open)
+        .onTapGesture { ui.open(.editTask(reminder)) }
         .onHover { hover = $0 }
+        .animation(.easeOut(duration: 0.15), value: hover)
+    }
+
+    private func dueText(_ due: Date, today: Bool) -> String {
+        let hasTime = reminder.dueDateComponents?.hour != nil
+        if today { return hasTime ? due.formatted(date: .omitted, time: .shortened) : "Today" }
+        let day = due.formatted(.dateTime.day().month(.abbreviated))
+        return hasTime ? "\(day), \(due.formatted(date: .omitted, time: .shortened))" : day
+    }
+
+    private func complete() {
+        reminder.isCompleted = true
+        try? store.save(reminder)
+        reload()
     }
 }
 
-struct NewTaskSheet: View {
+/// Everything Reminders exposes through EventKit: title, notes, URL, date, time, alert, repeat, list, priority.
+struct TaskEditor: View {
     let store: Store
-    let list: EKCalendar?
-    @Environment(\.dismiss) private var dismiss
-    @State private var title = ""
-    @State private var hasDue = false
-    @State private var due = Date.now
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("New task").font(.wave(26, .medium)).tracking(-0.6)
-            TextField("What needs doing?", text: $title).waveField()
-            Toggle("Due date", isOn: $hasDue).font(.wave(16))
-            if hasDue { DatePicker("", selection: $due).labelsHidden() }
-            HStack {
-                SecondaryButton(title: "Cancel") { dismiss() }
-                Spacer()
-                PrimaryButton(title: "Add task", large: false) {
-                    try? store.add(title, to: list, due: hasDue ? due : nil)
-                    dismiss()
-                }
-                .disabled(title.isEmpty).keyboardShortcut(.defaultAction)
-            }
-            .padding(.top, 8)
-        }
-        .padding(32)
-        .frame(width: 440)
-        .font(.wave(16))
-        .background(Theme.paper)
-    }
-}
-
-struct ReminderEditor: View {
-    let reminder: EKReminder
-    let store: Store
-    @Environment(\.dismiss) private var dismiss
+    let reminder: EKReminder?
+    @Environment(UI.self) private var ui
     @State private var title = ""
     @State private var notes = ""
-    @State private var hasDue = false
-    @State private var due = Date.now
+    @State private var url = ""
+    @State private var hasDate = false
+    @State private var hasTime = false
+    @State private var alert = false
+    @State private var date = Date.now
+    @State private var month = Date.now
     @State private var repeats: EKRecurrenceFrequency?
+    @State private var list: EKCalendar?
+    @State private var priority = 0
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Edit task").font(.wave(26, .medium)).tracking(-0.6)
-            TextField("Title", text: $title).waveField()
-            TextField("Notes", text: $notes, axis: .vertical).lineLimit(3...8).waveField()
-            Toggle("Due date", isOn: $hasDue)
-            if hasDue {
-                DatePicker("Due", selection: $due)
-                Picker("Repeat", selection: $repeats) {
-                    Text("Never").tag(EKRecurrenceFrequency?.none)
-                    Text("Daily").tag(EKRecurrenceFrequency?.some(.daily))
-                    Text("Weekly").tag(EKRecurrenceFrequency?.some(.weekly))
-                    Text("Monthly").tag(EKRecurrenceFrequency?.some(.monthly))
-                    Text("Yearly").tag(EKRecurrenceFrequency?.some(.yearly))
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                HStack {
+                    PanelTitle(text: reminder == nil ? "New task" : "Edit task")
+                    Spacer()
+                    if let reminder {
+                        SecondaryButton(title: "Delete") { try? store.delete(reminder); ui.close() }
+                    }
                 }
+                VStack(spacing: 8) {
+                    TextField("Title", text: $title).waveField()
+                    TextField("Notes", text: $notes, axis: .vertical).lineLimit(2...6).waveField()
+                    TextField("URL", text: $url).waveField()
+                }
+                VStack(spacing: 8) {
+                    Switch(title: "Date", isOn: $hasDate)
+                    if hasDate {
+                        MonthGrid(month: $month, selected: $date, eventDays: [])
+                            .padding(16).background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBlock))
+                        Switch(title: "Time", isOn: $hasTime)
+                        if hasTime { TimeRow(date: $date) }
+                        Switch(title: "Alert at the time", isOn: $alert)
+                        Select(title: "Repeat", value: $repeats, options: [
+                            (nil, "Never"), (.daily, "Daily"), (.weekly, "Weekly"), (.monthly, "Monthly"), (.yearly, "Yearly"),
+                        ])
+                    }
+                }
+                .padding(.top, 4)
+                VStack(spacing: 8) {
+                    if !store.lists.isEmpty {
+                        Select(title: "List", value: $list, options: store.lists.map { ($0, $0.title) })
+                    }
+                    Select(title: "Priority", value: $priority, options: [(0, "None"), (9, "Low"), (5, "Medium"), (1, "High")])
+                }
+                PanelButtons(primary: reminder == nil ? "Add task" : "Save", disabled: title.isEmpty, action: save)
             }
-            HStack {
-                SecondaryButton(title: "Cancel") { dismiss() }
-                Spacer()
-                PrimaryButton(title: "Save", action: save).keyboardShortcut(.defaultAction)
-            }
-            .padding(.top, 8)
         }
-        .padding(32)
-        .frame(width: 440)
-        .font(.wave(16))
-        .background(Theme.paper)
-        .onAppear {
-            title = reminder.title
-            notes = reminder.notes ?? ""
-            if let d = reminder.dueDate { hasDue = true; due = d }
-            repeats = reminder.recurrenceRules?.first?.frequency
+        .scrollIndicators(.hidden)
+        .frame(maxHeight: 760)
+        .panel(width: 480)
+        .onAppear(perform: load)
+    }
+
+    private func load() {
+        list = reminder?.calendar ?? store.ek.defaultCalendarForNewReminders() ?? store.lists.first
+        guard let reminder else { return }
+        title = reminder.title
+        notes = reminder.notes ?? ""
+        url = reminder.url?.absoluteString ?? ""
+        priority = reminder.priority
+        repeats = reminder.recurrenceRules?.first?.frequency
+        alert = reminder.hasAlarms
+        if let d = reminder.dueDate {
+            hasDate = true
+            hasTime = reminder.dueDateComponents?.hour != nil
+            date = d
+            month = d
         }
     }
 
     private func save() {
-        reminder.title = title
-        reminder.notes = notes.isEmpty ? nil : notes
-        reminder.dueDateComponents = hasDue
-            ? Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: due) : nil
-        reminder.recurrenceRules = (hasDue ? repeats : nil).map { [EKRecurrenceRule(recurrenceWith: $0, interval: 1, end: nil)] }
-        try? store.save(reminder)
-        dismiss()
+        let r = reminder ?? EKReminder(eventStore: store.ek)
+        r.title = title
+        r.notes = notes.isEmpty ? nil : notes
+        r.url = url.isEmpty ? nil : URL(string: url)
+        r.priority = priority
+        if let list { r.calendar = list }
+        if hasDate {
+            let parts: Set<Calendar.Component> = hasTime ? [.year, .month, .day, .hour, .minute] : [.year, .month, .day]
+            let components = Calendar.current.dateComponents(parts, from: date)
+            r.dueDateComponents = components
+            r.startDateComponents = components
+            r.recurrenceRules = repeats.map { [EKRecurrenceRule(recurrenceWith: $0, interval: 1, end: nil)] }
+            let alarmDate = hasTime ? date : Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: date) ?? date
+            r.alarms = alert ? [EKAlarm(absoluteDate: alarmDate)] : nil
+        } else {
+            r.dueDateComponents = nil
+            r.startDateComponents = nil
+            r.recurrenceRules = nil
+            r.alarms = nil
+        }
+        try? store.save(r)
+        ui.close()
     }
 }

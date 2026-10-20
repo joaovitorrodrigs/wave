@@ -7,8 +7,7 @@ struct HomePage: View {
     let store: Store
     let notes: Notes
     let finance: Finance
-    @Binding var page: Page
-    @Binding var editing: EKReminder?
+    @Environment(UI.self) private var ui
     @Query(sort: \Habit.created) private var habits: [Habit]
     @State private var upcoming: [EKReminder] = []
     @State private var monthEvents: [EKEvent] = []
@@ -28,7 +27,7 @@ struct HomePage: View {
             HStack(alignment: .firstTextBaseline) {
                 Text("Calendar").font(.wave(36, .medium)).tracking(-0.9)
                 Spacer()
-                SecondaryButton(title: "Open today") { page = .today }
+                SecondaryButton(title: "Open today") { ui.page = .today }
             }
             .padding(.top, 96).rise(0.3)
             HStack(alignment: .top, spacing: 16) {
@@ -44,19 +43,19 @@ struct HomePage: View {
                 .padding(.top, 20).rise(0.45)
             LazyVStack(spacing: 12) {
                 ForEach(Array(upcoming.prefix(6).enumerated()), id: \.element.id) { i, r in
-                    TaskRow(reminder: r, complete: { complete(r) }, open: { editing = r }).rise(0.5 + Double(i) * 0.05)
+                    TaskRow(reminder: r, store: store, reload: { Task { await load() } }).rise(0.5 + Double(i) * 0.05)
                 }
             }
             .padding(.top, 36)
             if upcoming.count > 6 {
-                SecondaryButton(title: "See all \(upcoming.count)") { page = .today }.padding(.top, 20)
+                SecondaryButton(title: "See all \(upcoming.count)") { ui.page = .today }.padding(.top, 20)
             }
 
             if !notes.items.isEmpty {
                 HStack(alignment: .firstTextBaseline) {
                     Text("Recent notes").font(.wave(36, .medium)).tracking(-0.9)
                     Spacer()
-                    SecondaryButton(title: "See all") { page = .notes }
+                    SecondaryButton(title: "See all") { ui.page = .notes }
                 }
                 .padding(.top, 96)
                 VStack(spacing: 6) {
@@ -123,12 +122,6 @@ struct HomePage: View {
         let from = cal.date(byAdding: .day, value: -7, to: first)!
         let to = cal.date(byAdding: .day, value: 49, to: first)!
         monthEvents = await store.events(from: min(from, cal.startOfDay(for: .now)), to: max(to, cal.endOfToday))
-    }
-
-    private func complete(_ r: EKReminder) {
-        r.isCompleted = true
-        try? store.save(r)
-        Task { await load() }
     }
 }
 

@@ -16,6 +16,19 @@ import SwiftData
         .modelContainer(Habit.container)
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1240, height: 860)
-        Settings { SettingsView() }
+        .commands {
+            CommandGroup(replacing: .newItem) {
+                Button("New Item") { UI.shared.open(UI.shared.newItem) }.keyboardShortcut("n")
+                Button("Search") { UI.shared.open(.palette) }.keyboardShortcut("k")
+            }
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") { UI.shared.open(.settings) }.keyboardShortcut(",")
+            }
+            CommandMenu("Go") {
+                ForEach(Array(Page.allCases.enumerated()), id: \.offset) { i, page in
+                    Button(page.rawValue) { UI.shared.page = page }.keyboardShortcut(KeyEquivalent(Character("\(i + 1)")))
+                }
+            }
+        }
     }
 }

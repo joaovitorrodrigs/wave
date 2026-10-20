@@ -70,6 +70,7 @@ enum Selection: Hashable {
     func reminder(id: String) -> EKReminder? { ek.calendarItem(withIdentifier: id) as? EKReminder }
 
     func save(_ r: EKReminder) throws { try ek.save(r, commit: true) }
+    func delete(_ r: EKReminder) throws { try ek.remove(r, commit: true) }
 }
 
 extension EKReminder: @retroactive Identifiable {

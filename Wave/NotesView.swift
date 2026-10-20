@@ -70,30 +70,22 @@ struct NoteRow: View {
 
 struct NoteEditor: View {
     let notes: Notes
-    @Environment(\.dismiss) private var dismiss
+    @Environment(UI.self) private var ui
     @State private var title = ""
     @State private var text = ""
     @State private var error: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("New note").font(.wave(26, .medium)).tracking(-0.6)
+            PanelTitle(text: "New note")
             TextField("Title", text: $title).waveField()
             TextEditor(text: $text).font(.wave(16)).scrollContentBackground(.hidden)
                 .padding(16).frame(minHeight: 220)
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
             if let error { Text(error).font(.wave(13)).foregroundStyle(Theme.violet) }
-            HStack {
-                SecondaryButton(title: "Cancel") { dismiss() }
-                Spacer()
-                PrimaryButton(title: "Save to Notes", action: save).disabled(title.isEmpty).keyboardShortcut(.defaultAction)
-            }
-            .padding(.top, 8)
+            PanelButtons(primary: "Save to Notes", disabled: title.isEmpty, action: save)
         }
-        .padding(32)
-        .frame(width: 520)
-        .font(.wave(16))
-        .background(Theme.paper)
+        .panel(width: 560)
     }
 
     private func save() {
@@ -101,7 +93,7 @@ struct NoteEditor: View {
             do {
                 try await notes.create(title: title, text: text)
                 await notes.load()
-                dismiss()
+                ui.close()
             } catch {
                 self.error = error.localizedDescription
             }
