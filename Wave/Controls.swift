@@ -33,7 +33,7 @@ struct FieldButton: View {
                 Text(title).foregroundStyle(Theme.ink.opacity(0.5))
                 Spacer()
                 Text(value).font(.wave(16, .medium)).lineLimit(1)
-                Image(systemName: "chevron.down").font(.system(size: 12, weight: .bold)).foregroundStyle(Theme.ink.opacity(0.6))
+                Icon("caret-down", size: 14, color: Theme.ink.opacity(0.6))
                     .rotationEffect(.degrees(open ? 180 : 0))
             }
             .padding(.horizontal, 20).padding(.vertical, 12)
@@ -55,7 +55,7 @@ struct OptionRow: View {
             HStack {
                 Text(text).font(.wave(16, selected ? .medium : .regular))
                 Spacer()
-                if selected { Image(systemName: "checkmark").font(.system(size: 12, weight: .bold)) }
+                if selected { Icon("check", size: 14) }
             }
             .foregroundStyle(selected ? Theme.paper : destructive ? Theme.violet : Theme.ink)
             .padding(.horizontal, 16).padding(.vertical, 10)
@@ -182,7 +182,7 @@ struct TimeStepper: View {
 
     private func stepButton(_ icon: String, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: icon).font(.system(size: 11, weight: .bold)).foregroundStyle(Theme.ink)
+            Icon(icon, size: 13, color: Theme.ink)
                 .frame(width: 28, height: 28).background(Theme.paper, in: RoundedRectangle(cornerRadius: 9))
         }
         .buttonStyle(PressStyle())
@@ -211,8 +211,7 @@ struct MenuButton: View {
 
     var body: some View {
         Button { withAnimation(.easeOut(duration: 0.15)) { open.toggle() } } label: {
-            Image(systemName: "ellipsis").font(.system(size: 14, weight: .bold))
-                .foregroundStyle(onDark ? Theme.paper : Theme.ink)
+            Icon("dots-three", size: 18, color: onDark ? Theme.paper : Theme.ink)
                 .frame(width: 32, height: 32)
                 .background(onDark ? Theme.paper.opacity(0.15) : Theme.chip, in: RoundedRectangle(cornerRadius: 10))
         }

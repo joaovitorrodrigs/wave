@@ -28,7 +28,7 @@ struct Palette: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 12) {
-                Image(systemName: "magnifyingglass").font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.ink.opacity(0.5))
+                Icon("magnifying-glass", size: 18, color: Theme.ink.opacity(0.5))
                 TextField("Search pages, tasks, notes, habits. Return runs the first result.", text: $query)
                     .textFieldStyle(.plain).font(.wave(20, .medium)).focused($focused)
                     .onSubmit { if let first = hits.first { run(first) } }

@@ -16,7 +16,7 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                NavBar(button: buttonTitle, icon: ui.page == .finances ? "arrow.clockwise" : "plus", action: primaryAction)
+                NavBar(button: buttonTitle, icon: ui.page == .finances ? "arrows-clockwise" : "plus", action: primaryAction)
                 ScrollView {
                     Group {
                         switch ui.page {
@@ -90,8 +90,8 @@ struct NavBar: View {
             HStack(spacing: 12) {
                 Text("Wave").font(.wave(20, .semibold)).tracking(-0.5)
                 Spacer()
-                Button { ui.open(.palette) } label: { navIcon("magnifyingglass") }.buttonStyle(PressStyle())
-                Button { ui.open(.settings) } label: { navIcon("gearshape.fill") }.buttonStyle(PressStyle())
+                Button { ui.open(.palette) } label: { navIcon("magnifying-glass") }.buttonStyle(PressStyle())
+                Button { ui.open(.settings) } label: { navIcon("gear-six") }.buttonStyle(PressStyle())
                 PrimaryButton(title: button, icon: icon, action: action)
             }
         }
@@ -100,7 +100,7 @@ struct NavBar: View {
     }
 
     private func navIcon(_ name: String) -> some View {
-        Image(systemName: name).font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.ink)
+        Icon(name, size: 16, color: Theme.ink)
             .frame(width: 40, height: 40).background(Theme.chip, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
     }
 }
@@ -168,7 +168,7 @@ struct TodayPage: View {
                     TaskRow(reminder: r, store: store, reload: reload).rise(0.25 + Double(min(i, 8)) * 0.05)
                 }
                 HStack(spacing: 16) {
-                    Image(systemName: "plus").font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.ink.opacity(0.4))
+                    Icon("plus", size: 16, color: Theme.ink.opacity(0.4))
                     TextField("New task, press Return", text: $newTitle).textFieldStyle(.plain).font(.wave(20, .medium)).onSubmit(add)
                 }
                 .padding(.horizontal, 32).padding(.vertical, 16)
@@ -225,8 +225,8 @@ struct TaskRow: View {
                     .font(.wave(20, .semibold)).foregroundStyle(today ? Theme.paper : Theme.violet)
             }
             Text(reminder.title ?? "").font(.wave(20, .medium)).tracking(-0.5).lineLimit(1)
-            if reminder.hasAlarms { Image(systemName: "bell.fill").font(.system(size: 12, weight: .bold)).foregroundStyle(fg.opacity(0.5)) }
-            if reminder.hasRecurrenceRules { Image(systemName: "repeat").font(.system(size: 12, weight: .bold)).foregroundStyle(fg.opacity(0.5)) }
+            if reminder.hasAlarms { Icon("bell", size: 14, color: fg.opacity(0.5)) }
+            if reminder.hasRecurrenceRules { Icon("repeat", size: 14, color: fg.opacity(0.5)) }
             Spacer()
             Text(reminder.calendar.title).foregroundStyle(fg.opacity(today ? 0.8 : 0.5))
             if let due {

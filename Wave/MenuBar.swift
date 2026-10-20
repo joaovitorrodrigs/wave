@@ -85,7 +85,7 @@ struct FlowChips: View {
             ForEach(habits) { habit in
                 Button { habit.toggle(.now) } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: habit.isDone(.now) ? "checkmark" : habit.icon).font(.system(size: 11, weight: .bold))
+                        Icon(habit.isDone(.now) ? "check" : habit.icon, size: 14, color: habit.isDone(.now) ? Theme.paper : Theme.ink.opacity(0.7))
                         Text(habit.name).lineLimit(1)
                     }
                     .font(.wave(13)).padding(.horizontal, 12).padding(.vertical, 7)

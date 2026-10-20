@@ -98,7 +98,7 @@ struct WeekView: View {
                         .buttonStyle(PressStyle())
                     }
                     Button { ui.open(.newEvent(Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: day) ?? day)) } label: {
-                        Image(systemName: "plus").font(.system(size: 12, weight: .bold)).foregroundStyle(Theme.ink.opacity(0.35))
+                        Icon("plus", size: 14, color: Theme.ink.opacity(0.35))
                             .frame(maxWidth: .infinity).frame(height: 32)
                             .background(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.ink.opacity(0.1), style: StrokeStyle(lineWidth: 1, dash: [4])))
                     }

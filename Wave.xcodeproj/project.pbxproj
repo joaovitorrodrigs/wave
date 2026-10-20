@@ -12,6 +12,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXBuildFile section */
+		000000000000000420000000 /* PhosphorSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000410000000 /* PhosphorSwift */; };
 		000000000000000000000221 /* wave in Embed CLI */ = {isa = PBXBuildFile; fileRef = 000000000000000000000220 /* wave */; };
 /* End PBXBuildFile section */
 
@@ -63,6 +64,7 @@
 		000000000000000130000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				000000000000000420000000 /* PhosphorSwift in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -129,6 +131,9 @@
 				000000000000000000000012 /* Shared */,
 			);
 			name = Wave;
+			packageProductDependencies = (
+				000000000000000410000000 /* PhosphorSwift */,
+			);
 			productName = Wave;
 			productReference = 000000000000000000000120 /* Wave.app */;
 			productType = "com.apple.product-type.application";
@@ -156,6 +161,9 @@
 				Base,
 			);
 			mainGroup = 000000000000000000000001;
+			packageReferences = (
+				000000000000000400000000 /* XCRemoteSwiftPackageReference "swift" */,
+			);
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
@@ -442,6 +450,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		000000000000000400000000 /* XCRemoteSwiftPackageReference "swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/phosphor-icons/swift";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		000000000000000410000000 /* PhosphorSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 000000000000000400000000 /* XCRemoteSwiftPackageReference "swift" */;
+			productName = PhosphorSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 000000000000000000000000 /* Project object */;
 }

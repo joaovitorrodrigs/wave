@@ -130,7 +130,7 @@ struct TodayCard: View {
     let events: [EKEvent]
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Image(systemName: "calendar").font(.system(size: 28, weight: .regular))
+            Icon("calendar-blank", size: 30)
             Text("Today").font(.wave(24, .medium)).tracking(-0.6).padding(.top, 24)
             if events.isEmpty {
                 Text("No events. The day is yours.").foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(4).padding(.top, 12)
@@ -161,7 +161,7 @@ struct MoneyCard: View {
         let checking = finance.accounts.first { $0.type == "BANK" }
         let credit = finance.accounts.first { $0.type == "CREDIT" }
         VStack(alignment: .leading, spacing: 0) {
-            Image(systemName: "creditcard.fill").font(.system(size: 34)).foregroundStyle(Theme.paper.opacity(0.4))
+            Icon("credit-card", size: 36, color: Theme.paper.opacity(0.4))
             if let checking {
                 Text(checking.value, format: .currency(code: checking.currencyCode))
                     .font(.wave(30, .medium)).tracking(-0.8).monospacedDigit().padding(.top, 24)
@@ -201,9 +201,7 @@ struct HabitsDeck: View {
                     HStack {
                         Text(habit.name).font(.wave(16, .medium)).lineLimit(1)
                         Spacer()
-                        Image(systemName: isDone ? "checkmark.circle.fill" : habit.icon)
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundStyle(isDone ? Theme.brand : habit.tint)
+                        Icon(isDone ? "check-circle" : habit.icon, size: 28, color: isDone ? Theme.brand : habit.tint)
                     }
                     .padding(.horizontal, 24)
                     .frame(height: 64)
@@ -221,7 +219,7 @@ struct HabitsDeck: View {
             HStack(spacing: 0) {
                 HStack(spacing: -10) {
                     ForEach(done.prefix(4)) { habit in
-                        Image(systemName: habit.icon).font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.brand)
+                        Icon(habit.icon, size: 16, color: Theme.brand)
                             .frame(width: 36, height: 36).background(Theme.paper, in: Circle())
                             .overlay(Circle().stroke(Theme.brand, lineWidth: 2))
                     }
@@ -253,8 +251,8 @@ struct MonthGrid: View {
             HStack {
                 Text(month, format: .dateTime.month(.wide).year()).font(.wave(20, .medium)).tracking(-0.5)
                 Spacer()
-                monthButton("chevron.left", -1)
-                monthButton("chevron.right", 1)
+                monthButton("caret-left", -1)
+                monthButton("caret-right", 1)
             }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
                 ForEach(weekdays, id: \.self) { Text($0).font(.wave(13)).foregroundStyle(Theme.ink.opacity(0.4)) }
@@ -281,7 +279,7 @@ struct MonthGrid: View {
 
     private func monthButton(_ icon: String, _ delta: Int) -> some View {
         Button { month = Calendar.current.date(byAdding: .month, value: delta, to: month)! } label: {
-            Image(systemName: icon).font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.ink)
+            Icon(icon, size: 15, color: Theme.ink)
                 .frame(width: 36, height: 36).background(Theme.chip, in: RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(PressStyle())

@@ -38,7 +38,7 @@ struct ReviewPage: View {
 
             HStack(alignment: .top, spacing: 16) {
                 card {
-                    Image(systemName: "checkmark.circle.fill").font(.system(size: 28)).foregroundStyle(Theme.brand)
+                    Icon("check-circle", size: 30, color: Theme.brand)
                     Text("\(completed.count) done").font(.wave(24, .medium)).tracking(-0.6).padding(.top, 24)
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(completed.prefix(7)) { r in
@@ -51,7 +51,7 @@ struct ReviewPage: View {
                 .rise(0.15)
 
                 VStack(alignment: .leading, spacing: 0) {
-                    Image(systemName: "flame.fill").font(.system(size: 30)).foregroundStyle(Theme.paper.opacity(0.4))
+                    Icon("flame", size: 32, color: Theme.paper.opacity(0.4))
                     Text(possible == 0 ? "No habits" : "\(Int(Double(habitDays.reduce(0, +)) / Double(possible) * 100))% of habits")
                         .font(.wave(24, .medium)).tracking(-0.6).padding(.top, 24)
                     VStack(alignment: .leading, spacing: 10) {
@@ -79,7 +79,7 @@ struct ReviewPage: View {
                 .rise(0.2)
 
                 card {
-                    Image(systemName: "creditcard.fill").font(.system(size: 28)).foregroundStyle(Theme.ink.opacity(0.4))
+                    Icon("credit-card", size: 30, color: Theme.ink.opacity(0.4))
                     Text(income, format: .currency(code: "BRL")).font(.wave(24, .medium)).tracking(-0.6).foregroundStyle(Theme.brand).padding(.top, 24)
                     Text("in").foregroundStyle(Theme.ink.opacity(0.6))
                     Text(spent, format: .currency(code: "BRL")).font(.wave(24, .medium)).tracking(-0.6).padding(.top, 12)

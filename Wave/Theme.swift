@@ -1,5 +1,29 @@
 import SwiftUI
 import AppKit
+import PhosphorSwift
+
+/// Phosphor icon by kebab-case name, fill weight like the site. Old SF Symbol names stored in habits still resolve.
+struct Icon: View {
+    let name: String
+    var size: CGFloat = 20
+    var color: Color = Theme.ink
+    var weight: Ph.IconWeight = .fill
+
+    init(_ name: String, size: CGFloat = 20, color: Color = Theme.ink, weight: Ph.IconWeight = .fill) {
+        self.name = name; self.size = size; self.color = color; self.weight = weight
+    }
+
+    static let legacy: [String: String] = [
+        "figure.run": "person-simple-run", "dumbbell": "barbell", "fork.knife": "fork-knife", "bed.double": "bed",
+        "sun.max": "sun", "music.note": "music-note", "dollarsign": "currency-dollar", "laptopcomputer": "laptop",
+    ]
+
+    var body: some View {
+        (Ph(rawValue: name) ?? Ph(rawValue: Icon.legacy[name] ?? "") ?? .circle)
+            .weight(weight).color(color)
+            .frame(width: size, height: size)
+    }
+}
 
 /// Tokens and primitives from wavestudio.pro (`src/index.css` and the Home components).
 enum Theme {
@@ -89,7 +113,7 @@ struct PrimaryButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
-                if let icon { Image(systemName: icon).font(.system(size: 15, weight: .bold)) }
+                if let icon { Icon(icon, size: 18, color: onDark ? Theme.ink : Theme.paper) }
                 Text(title)
             }
             .font(.wave(16, .medium))

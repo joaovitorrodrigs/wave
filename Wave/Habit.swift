@@ -15,8 +15,8 @@ import SwiftUI
         self.color = color
     }
 
-    static let icons = ["figure.run", "dumbbell", "book", "pencil", "brain", "drop", "leaf", "fork.knife",
-                        "bed.double", "sun.max", "moon", "music.note", "heart", "star", "dollarsign", "laptopcomputer"]
+    static let icons = ["person-simple-run", "barbell", "book", "pencil", "brain", "drop", "leaf", "fork-knife",
+                        "bed", "sun", "moon", "music-note", "heart", "star", "currency-dollar", "laptop"]
     static let palette: [(String, Color)] = [("red", .red), ("orange", .orange), ("yellow", .yellow), ("green", .green),
                                              ("mint", .mint), ("teal", .teal), ("blue", .blue), ("indigo", .indigo),
                                              ("purple", .purple), ("pink", .pink)]

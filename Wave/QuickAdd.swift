@@ -61,7 +61,7 @@ struct QuickAddView: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            Image(systemName: "plus").font(.system(size: 18, weight: .bold)).foregroundStyle(Theme.ink.opacity(0.5))
+            Icon("plus", size: 20, color: Theme.ink.opacity(0.5))
             TextField("Add a task to Reminders. Return saves, Esc closes.", text: $text)
                 .textFieldStyle(.plain).font(.wave(22, .medium)).focused($focused).onSubmit(submit)
             Button("") { close() }.keyboardShortcut(.cancelAction).opacity(0).frame(width: 0, height: 0)

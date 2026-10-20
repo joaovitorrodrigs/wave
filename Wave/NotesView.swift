@@ -10,7 +10,7 @@ struct NotesPage: View {
             Heading(muted: "Everything you wrote down.", strong: summary).padding(.top, 20).rise(0.05)
 
             HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass").font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.ink.opacity(0.5))
+                Icon("magnifying-glass", size: 15, color: Theme.ink.opacity(0.5))
                 TextField("Search title and text, press Return", text: $query).textFieldStyle(.plain).font(.wave(14))
                     .onSubmit { Task { await notes.load(query: query) } }
             }
@@ -54,8 +54,7 @@ struct NoteRow: View {
             Text(note.title).font(.wave(20, .medium)).tracking(-0.5).lineLimit(1)
             Spacer()
             Text(note.modified, format: .relative(presentation: .named)).foregroundStyle(Theme.ink.opacity(0.5))
-            Image(systemName: hover ? "arrow.up.right" : "plus")
-                .font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.ink.opacity(0.6))
+            Icon(hover ? "arrow-up-right" : "plus", size: 18, color: Theme.ink.opacity(0.6))
                 .frame(width: 22)
         }
         .padding(.horizontal, 20).padding(.vertical, 16)
