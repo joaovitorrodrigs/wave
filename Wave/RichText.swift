@@ -127,6 +127,7 @@ struct RichTextView: NSViewRepresentable {
         textView.font = RichEditor.bodyFont
         textView.textColor = Theme.nsInk
         textView.insertionPointColor = Theme.nsInk
+        textView.selectedTextAttributes = [.backgroundColor: Theme.nsSelection]
         textView.delegate = context.coordinator
         load(textView)
         context.coordinator.loaded = noteID

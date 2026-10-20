@@ -43,6 +43,8 @@ enum Theme {
     static let ink = dynamic(inkNS, .white)
     /// Same ink, as a dynamic NSColor for AppKit text views.
     static let nsInk = NSColor(name: nil) { $0.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? .white : inkNS }
+    /// Text selection: neutral, not the system blue.
+    static let nsSelection = NSColor(name: nil) { $0.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? NSColor(white: 1, alpha: 0.22) : NSColor(white: 0, alpha: 0.12) }
     static let nsSurface = NSColor(name: nil) { $0.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? NSColor(white: 1, alpha: 0.08) : NSColor(white: 0, alpha: 0.05) }
     static let paper = dynamic(.white, .black)
     static let black = dynamic(.black, .white)

@@ -132,10 +132,11 @@ struct NoteEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center) {
-                TextField("Title", text: $note.title).textFieldStyle(.plain).font(.wave(26, .medium)).focused($titleFocused)
+                FormatBar(editor: editor)
                 HoldButton(compact: true, action: onDelete)
             }
-            FormatBar(editor: editor)
+            TextField("Title", text: $note.title).textFieldStyle(.plain).font(.wave(26, .medium)).focused($titleFocused)
+                .padding(.top, 8)
             RichTextView(editor: editor, noteID: "\(note.persistentModelID)", initialRTF: note.rich, initialText: note.text) { rtf, text in
                 note.rich = rtf
                 note.text = text
