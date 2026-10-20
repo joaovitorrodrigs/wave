@@ -1,6 +1,30 @@
 import SwiftUI
 import SwiftData
 import EventKit
+import AppKit
+
+/// Strips the system popover chrome from the menu bar window: transparent, borderless, shadow from our own shape.
+struct ClearWindow: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView { Configurator() }
+    func updateNSView(_ view: NSView, context: Context) {}
+
+    final class Configurator: NSView {
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard let window else { return }
+            window.isOpaque = false
+            window.backgroundColor = .clear
+            window.hasShadow = true
+            if let frame = window.contentView?.superview {
+                frame.wantsLayer = true
+                frame.layer?.borderWidth = 0
+                frame.layer?.backgroundColor = NSColor.clear.cgColor
+                frame.subviews.compactMap { $0 as? NSVisualEffectView }.forEach { $0.isHidden = true }
+            }
+            window.invalidateShadow()
+        }
+    }
+}
 
 /// Compact Today behind the menu bar glyph: events, tasks to tick, habits to tap.
 struct MenuBarPanel: View {
@@ -61,7 +85,9 @@ struct MenuBarPanel: View {
         }
         .padding(20)
         .frame(width: 380)
-        .background(CanvasBackground())
+        .background(Theme.paper, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
+        .padding(8)
+        .background(ClearWindow())
         .font(.wave(15))
         .foregroundStyle(Theme.ink)
         .preferredColorScheme(Theme.scheme(theme))
