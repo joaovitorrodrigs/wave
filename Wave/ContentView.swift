@@ -32,10 +32,20 @@ struct ContentView: View {
                     }
                     .id(ui.page)
                     .frame(maxWidth: 1200)
-                    .padding(.horizontal, 40).padding(.top, 32).padding(.bottom, 96)
+                    .padding(.horizontal, 40).padding(.top, 32).padding(.bottom, 160)
                     .frame(maxWidth: .infinity)
                 }
                 .scrollIndicators(.never)
+            }
+            .overlay(alignment: .bottom) {
+                Dock(items: Page.allCases.map { page in
+                    DockItem(id: page.rawValue, label: page.rawValue, icon: page.icon, active: ui.page == page) { ui.page = page }
+                } + [
+                    DockItem(id: "|", label: "", icon: "", action: {}),
+                    DockItem(id: "search", label: "Search ⌘K", icon: "magnifying-glass") { ui.open(.palette) },
+                    DockItem(id: "settings", label: "Settings ⌘,", icon: "gear-six") { ui.open(.settings) },
+                ])
+                .padding(.bottom, 24)
             }
             ModalHost(store: store, notes: notes, finance: finance)
         }
@@ -73,50 +83,20 @@ struct ContentView: View {
     }
 }
 
-/// The site's navbar: brand left, links centered, settings and the ink button right. Sits under the hidden title bar.
+/// Brand left, the ink button right. Page links live in the dock at the bottom. Sits under the hidden title bar.
 struct NavBar: View {
     let button: String
     let icon: String
     let action: () -> Void
-    @Environment(UI.self) private var ui
 
     var body: some View {
-        ZStack {
-            HStack(spacing: 24) {
-                ForEach(Page.allCases, id: \.self) { p in
-                    NavLink(title: p.rawValue, active: ui.page == p) { ui.page = p }
-                }
-            }
-            HStack(spacing: 12) {
-                Text("Wave").font(.wave(20, .semibold)).tracking(-0.5)
-                Spacer()
-                Button { ui.open(.palette) } label: { navIcon("magnifying-glass") }.buttonStyle(PressStyle())
-                Button { ui.open(.settings) } label: { navIcon("gear-six") }.buttonStyle(PressStyle())
-                PrimaryButton(title: button, icon: icon, action: action)
-            }
+        HStack(spacing: 12) {
+            Text("Wave").font(.wave(20, .semibold)).tracking(-0.5)
+            Spacer()
+            PrimaryButton(title: button, icon: icon, action: action)
         }
         .padding(.leading, 96).padding(.trailing, 40)
         .frame(height: 72)
-    }
-
-    private func navIcon(_ name: String) -> some View {
-        Icon(name, size: 16, color: Theme.ink)
-            .frame(width: 40, height: 40).background(Theme.chip, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
-    }
-}
-
-struct NavLink: View {
-    let title: String
-    let active: Bool
-    let action: () -> Void
-    @State private var hover = false
-    var body: some View {
-        Button(action: action) {
-            Text(title).font(.wave(16)).foregroundStyle(Theme.ink.opacity(active || hover ? 1 : 0.7))
-        }
-        .buttonStyle(.plain)
-        .onHover { hover = $0 }
-        .animation(.easeOut(duration: 0.2), value: hover)
     }
 }
 
