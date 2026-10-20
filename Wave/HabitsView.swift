@@ -55,7 +55,7 @@ struct HabitCard: View {
                     ("Delete", true, { context.delete(habit) }),
                 ])
                 Button { habit.toggle(.now) } label: {
-                    Icon(habit.icon, size: 24, color: done ? Theme.violet : habit.tint)
+                    Icon(habit.icon, size: 24, color: done ? Theme.violet : habit.tint, weight: .fill)
                         .frame(width: 44, height: 44)
                         .background(done ? Theme.paper : habit.tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 16))
                 }
@@ -127,7 +127,7 @@ struct HabitEditor: View {
             TextField("Name", text: $name).waveField()
             LazyVGrid(columns: Array(repeating: GridItem(.fixed(40)), count: 8), spacing: 6) {
                 ForEach(Habit.icons, id: \.self) { i in
-                    Icon(i, size: 20, color: i == icon ? Theme.paper : Theme.ink)
+                    Icon(i, size: 20, color: i == icon ? Theme.paper : Theme.ink, weight: .fill)
                         .frame(width: 36, height: 36)
                         .background(i == icon ? Theme.ink : Theme.surface, in: RoundedRectangle(cornerRadius: 12))
                         .onTapGesture { icon = i }

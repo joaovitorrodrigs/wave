@@ -2,14 +2,15 @@ import SwiftUI
 import AppKit
 import PhosphorSwift
 
-/// Phosphor icon by kebab-case name, fill weight like the site. Old SF Symbol names stored in habits still resolve.
+/// Phosphor icon by kebab-case name. Like the site: `bold` for arrows, carets and controls, `fill` for feature icons.
+/// Old SF Symbol names stored in habits still resolve.
 struct Icon: View {
     let name: String
     var size: CGFloat = 20
     var color: Color = Theme.ink
-    var weight: Ph.IconWeight = .fill
+    var weight: Ph.IconWeight = .bold
 
-    init(_ name: String, size: CGFloat = 20, color: Color = Theme.ink, weight: Ph.IconWeight = .fill) {
+    init(_ name: String, size: CGFloat = 20, color: Color = Theme.ink, weight: Ph.IconWeight = .bold) {
         self.name = name; self.size = size; self.color = color; self.weight = weight
     }
 

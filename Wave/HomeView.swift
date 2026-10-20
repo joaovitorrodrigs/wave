@@ -131,7 +131,7 @@ struct TodayCard: View {
     @State private var gmail = Gmail.shared
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Icon("calendar-blank", size: 30)
+            Icon("calendar-blank", size: 30, weight: .fill)
             Text("Today").font(.wave(24, .medium)).tracking(-0.6).padding(.top, 24)
             if events.isEmpty {
                 Text("No events. The day is yours.").foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(4).padding(.top, 12)
@@ -167,7 +167,7 @@ struct MoneyCard: View {
         let checking = finance.accounts.first { $0.type == "BANK" }
         let credit = finance.accounts.first { $0.type == "CREDIT" }
         VStack(alignment: .leading, spacing: 0) {
-            Icon("credit-card", size: 36, color: Theme.paper.opacity(0.4))
+            Icon("credit-card", size: 36, color: Theme.paper.opacity(0.4), weight: .fill)
             if let checking {
                 Text(checking.value, format: .currency(code: checking.currencyCode))
                     .font(.wave(30, .medium)).tracking(-0.8).monospacedDigit().padding(.top, 24)
@@ -207,7 +207,7 @@ struct HabitsDeck: View {
                     HStack {
                         Text(habit.name).font(.wave(16, .medium)).lineLimit(1)
                         Spacer()
-                        Icon(isDone ? "check-circle" : habit.icon, size: 28, color: isDone ? Theme.brand : habit.tint)
+                        Icon(isDone ? "check-circle" : habit.icon, size: 28, color: isDone ? Theme.brand : habit.tint, weight: .fill)
                     }
                     .padding(.horizontal, 24)
                     .frame(height: 64)
@@ -225,7 +225,7 @@ struct HabitsDeck: View {
             HStack(spacing: 0) {
                 HStack(spacing: -10) {
                     ForEach(done.prefix(4)) { habit in
-                        Icon(habit.icon, size: 16, color: Theme.brand)
+                        Icon(habit.icon, size: 16, color: Theme.brand, weight: .fill)
                             .frame(width: 36, height: 36).background(Theme.paper, in: Circle())
                             .overlay(Circle().stroke(Theme.brand, lineWidth: 2))
                     }

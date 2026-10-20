@@ -254,7 +254,7 @@ struct MailRow: View {
             } label: { Chip(text: made ? "Task added" : "Make a task", selected: made) }
             .buttonStyle(PressStyle())
             .disabled(made)
-            Icon(hover ? "arrow-up-right" : "envelope-simple", size: 18, color: Theme.ink.opacity(0.6))
+            Icon(hover ? "arrow-up-right" : "envelope-simple", size: 18, color: Theme.ink.opacity(0.6), weight: hover ? .bold : .fill)
         }
         .padding(.horizontal, 20).padding(.vertical, 14)
         .cardBlock()
