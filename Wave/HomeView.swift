@@ -292,6 +292,7 @@ struct MonthGrid: View {
 struct DayEvents: View {
     let day: Date
     let events: [EKEvent]
+    @Environment(UI.self) private var ui
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(day, format: .dateTime.weekday(.wide).day().month(.wide))
@@ -310,6 +311,8 @@ struct DayEvents: View {
                 }
                 .padding(.horizontal, 20).padding(.vertical, 16)
                 .cardBlock()
+                .contentShape(Rectangle())
+                .onTapGesture { ui.open(.editEvent(e)) }
             }
             Spacer(minLength: 0)
         }

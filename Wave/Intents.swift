@@ -1,0 +1,45 @@
+import AppIntents
+
+struct AddTaskIntent: AppIntent {
+    static let title: LocalizedStringResource = "Add Task"
+    static let description = IntentDescription("Adds a task to Reminders through Wave.")
+
+    @Parameter(title: "Title", requestValueDialog: "What is the task?")
+    var title: String
+
+    static var parameterSummary: some ParameterSummary { Summary("Add task \(\.$title)") }
+
+    @MainActor func perform() async throws -> some IntentResult & ProvidesDialog {
+        let store = Store()
+        await store.load()
+        guard store.authorized else { return .result(dialog: "Wave needs Reminders access first.") }
+        try store.add(title, to: nil)
+        return .result(dialog: IntentDialog("Added \(title)."))
+    }
+}
+
+struct AddNoteIntent: AppIntent {
+    static let title: LocalizedStringResource = "Add Note"
+    static let description = IntentDescription("Creates a note in Apple Notes through Wave.")
+
+    @Parameter(title: "Title", requestValueDialog: "What is the note called?")
+    var title: String
+    @Parameter(title: "Text", default: "")
+    var text: String
+
+    static var parameterSummary: some ParameterSummary { Summary("Add note \(\.$title)") { \.$text } }
+
+    @MainActor func perform() async throws -> some IntentResult & ProvidesDialog {
+        try await Notes().create(title: title, text: text)
+        return .result(dialog: IntentDialog("Saved \(title) to Notes."))
+    }
+}
+
+struct WaveShortcuts: AppShortcutsProvider {
+    static var appShortcuts: [AppShortcut] {
+        AppShortcut(intent: AddTaskIntent(), phrases: ["Add a task in \(.applicationName)", "New \(.applicationName) task"],
+                    shortTitle: "Add task", systemImageName: "plus")
+        AppShortcut(intent: AddNoteIntent(), phrases: ["Add a note in \(.applicationName)", "New \(.applicationName) note"],
+                    shortTitle: "Add note", systemImageName: "note.text")
+    }
+}

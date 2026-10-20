@@ -71,6 +71,22 @@ enum Selection: Hashable {
 
     func save(_ r: EKReminder) throws { try ek.save(r, commit: true) }
     func delete(_ r: EKReminder) throws { try ek.remove(r, commit: true) }
+
+    var eventCalendars: [EKCalendar] {
+        ek.calendars(for: .event).filter { $0.allowsContentModifications }.sorted { $0.title < $1.title }
+    }
+    func save(_ e: EKEvent) throws { try ek.save(e, span: .thisEvent, commit: true) }
+    func delete(_ e: EKEvent) throws { try ek.remove(e, span: .thisEvent, commit: true) }
+
+    func allOpen() async -> [EKReminder] {
+        guard authorized else { return [] }
+        return await reminders(matching: ek.predicateForIncompleteReminders(withDueDateStarting: nil, ending: nil, calendars: nil))
+    }
+
+    func completed(from: Date, to: Date) async -> [EKReminder] {
+        guard authorized else { return [] }
+        return await reminders(matching: ek.predicateForCompletedReminders(withCompletionDateStarting: from, ending: to, calendars: nil))
+    }
 }
 
 extension EKReminder: @retroactive Identifiable {

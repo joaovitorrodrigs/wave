@@ -42,7 +42,7 @@ import SwiftUI
     static let container: ModelContainer = {
         let url = URL.applicationSupportDirectory.appending(path: "Wave/wave.store")
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        return try! ModelContainer(for: Habit.self, configurations: ModelConfiguration(url: url))
+        return try! ModelContainer(for: Habit.self, Client.self, configurations: ModelConfiguration(url: url))
     }()
 
     #if DEBUG

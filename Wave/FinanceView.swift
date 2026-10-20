@@ -32,15 +32,31 @@ struct FinancePage: View {
                         if let error = finance.error {
                             Text(error).font(.wave(14)).foregroundStyle(Theme.paper.opacity(0.6))
                         }
-                        LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)], spacing: 16) {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: finance.stripe == nil ? 2 : 3), spacing: 16) {
                             ForEach(finance.accounts) { AccountCard(account: $0) }
+                            if let stripe = finance.stripe { StripeCard(stripe: stripe) }
                         }
                     }
                 }
                 .padding(.top, 48).rise(0.1)
 
+                if !finance.categories.isEmpty {
+                    let totals = finance.monthTotals()
+                    Eyebrow(text: "Spending by category").padding(.top, 96).rise(0.15)
+                    Heading(muted: "This month against last.",
+                            strong: "\(totals.spent.formatted(.currency(code: "BRL"))) out, \(totals.income.formatted(.currency(code: "BRL"))) in.")
+                        .padding(.top, 20).rise(0.2)
+                    let top = finance.categories.first?.thisMonth ?? 1
+                    VStack(spacing: 12) {
+                        ForEach(Array(finance.categories.prefix(8).enumerated()), id: \.element.id) { i, c in
+                            CategoryRow(category: c, share: top > 0 ? c.thisMonth / top : 0).rise(0.25 + Double(i) * 0.04)
+                        }
+                    }
+                    .padding(.top, 36)
+                }
+
                 if !finance.transactions.isEmpty {
-                    Eyebrow(text: "Last 30 days").padding(.top, 56).rise(0.15)
+                    Eyebrow(text: "Last 60 days").padding(.top, 96).rise(0.15)
                     LazyVStack(spacing: 12) {
                         ForEach(Array(finance.transactions.enumerated()), id: \.element.id) { i, t in
                             TransactionRow(transaction: t).rise(0.2 + Double(min(i, 8)) * 0.04)
@@ -88,6 +104,56 @@ struct AccountCard: View {
     }
 }
 
+/// Dark card for the studio's Stripe account.
+struct StripeCard: View {
+    let stripe: StripeSummary
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Wave Studio").font(.wave(20, .medium)).tracking(-0.5).foregroundStyle(Theme.paper)
+            Text("Stripe · revenue this month").foregroundStyle(Theme.paper.opacity(0.5)).padding(.top, 4)
+            Text(stripe.monthRevenue, format: .currency(code: stripe.currency))
+                .font(.wave(36, .medium)).tracking(-0.9).monospacedDigit().foregroundStyle(Theme.brand).padding(.top, 24)
+            Text("\(stripe.available.formatted(.currency(code: stripe.currency))) available to pay out")
+                .foregroundStyle(Theme.paper.opacity(0.5)).padding(.top, 8)
+        }
+        .padding(32)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.darkCard, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
+        .overlay(RoundedRectangle(cornerRadius: Theme.radiusCard).stroke(Theme.paper.opacity(0.06)))
+    }
+}
+
+/// Experience row with a bar: category, share of the top category, this month, change against last month.
+struct CategoryRow: View {
+    let category: CategorySpend
+    let share: Decimal
+    var body: some View {
+        let delta: Double? = category.lastMonth > 0
+            ? (Double(truncating: (category.thisMonth - category.lastMonth) as NSNumber) / Double(truncating: category.lastMonth as NSNumber)) : nil
+        HStack(spacing: 24) {
+            Text(category.name).font(.wave(18, .medium)).tracking(-0.4).lineLimit(1).frame(width: 220, alignment: .leading)
+            Capsule().fill(Theme.ink.opacity(0.08)).frame(height: 8)
+                .overlay(alignment: .leading) {
+                    GeometryReader { g in
+                        Capsule().fill(Theme.ink).frame(width: g.size.width * CGFloat(truncating: share as NSNumber))
+                    }
+                }
+            Text(category.thisMonth, format: .currency(code: "BRL")).font(.wave(18, .medium)).monospacedDigit().frame(width: 130, alignment: .trailing)
+            Group {
+                if let delta {
+                    Text((delta >= 0 ? "+" : "") + delta.formatted(.percent.precision(.fractionLength(0))))
+                        .foregroundStyle(delta > 0 ? Theme.violet : Theme.brand)
+                } else {
+                    Text(category.lastMonth == 0 ? "new" : "—").foregroundStyle(Theme.ink.opacity(0.5))
+                }
+            }
+            .font(.wave(14, .medium)).frame(width: 60, alignment: .trailing)
+        }
+        .padding(.horizontal, 32).padding(.vertical, 14)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
+    }
+}
+
 /// Experience row for a transaction; credits in brand green.
 struct TransactionRow: View {
     let transaction: Transaction
@@ -112,6 +178,7 @@ struct TransactionRow: View {
 
 struct SettingsPanel: View {
     @State private var key = Keychain.get(Finance.keyAccount) ?? ""
+    @State private var stripe = Keychain.get(Finance.stripeAccount) ?? ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -121,8 +188,14 @@ struct SettingsPanel: View {
             Text("Read-only access to your bank accounts through Banco MCP (Open Finance Brasil). Kept in the macOS Keychain.")
                 .font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(3)
             Link("Create a key at app.mcp.ai", destination: URL(string: "https://app.mcp.ai/settings/api-keys")!).font(.wave(14, .medium))
+            Text("Stripe").font(.wave(16, .medium)).padding(.top, 12)
+            SecureField("rk_live_… (restricted key, read only)", text: $stripe).waveField()
+            Text("Shows this month's revenue and the available balance on the Finances page. Make a restricted key with read access to Balance and Charges.")
+                .font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(3)
+            Text("Quick add from anywhere: ⌘⇧Space. Siri: “Add a task in Wave”.").font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).padding(.top, 12)
         }
-        .panel(width: 480)
+        .panel(width: 500)
         .onChange(of: key) { Keychain.set(key, account: Finance.keyAccount) }
+        .onChange(of: stripe) { Keychain.set(stripe, account: Finance.stripeAccount) }
     }
 }

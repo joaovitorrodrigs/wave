@@ -21,6 +21,8 @@ import SwiftData
         switch page {
         case .habits: .newHabit
         case .notes: .newNote
+        case .calendar: .newEvent(.now)
+        case .clients: .newClient
         default: .newTask
         }
     }
@@ -28,6 +30,7 @@ import SwiftData
 
 enum Modal: Identifiable {
     case newTask, editTask(EKReminder), newHabit, editHabit(Habit), newNote, settings, palette
+    case newEvent(Date), editEvent(EKEvent), newClient, editClient(Client)
 
     var id: String {
         switch self {
@@ -38,6 +41,10 @@ enum Modal: Identifiable {
         case .newNote: "newNote"
         case .settings: "settings"
         case .palette: "palette"
+        case .newEvent(let d): "event-\(d.timeIntervalSince1970)"
+        case .editEvent(let e): "event-\(e.eventIdentifier ?? "")"
+        case .newClient: "newClient"
+        case .editClient(let c): "client-\(c.persistentModelID)"
         }
     }
 }
@@ -71,6 +78,10 @@ struct ModalHost: View {
         case .newNote: NoteEditor(notes: notes)
         case .settings: SettingsPanel()
         case .palette: Palette(store: store, notes: notes)
+        case .newEvent(let d): EventEditor(store: store, event: nil, day: d)
+        case .editEvent(let e): EventEditor(store: store, event: e, day: e.startDate)
+        case .newClient: ClientEditor(client: nil)
+        case .editClient(let c): ClientEditor(client: c)
         }
     }
 }

@@ -2,7 +2,8 @@ import SwiftUI
 import EventKit
 
 enum Page: String, CaseIterable {
-    case home = "Home", today = "Today", habits = "Habits", notes = "Notes", finances = "Finances"
+    case home = "Home", today = "Today", calendar = "Calendar", habits = "Habits", notes = "Notes"
+    case finances = "Finances", clients = "Clients", review = "Review"
 }
 
 struct ContentView: View {
@@ -21,9 +22,12 @@ struct ContentView: View {
                         switch ui.page {
                         case .home: HomePage(store: store, notes: notes, finance: finance)
                         case .today: TodayPage(store: store, list: $list)
+                        case .calendar: CalendarPage(store: store)
                         case .habits: HabitsPage()
                         case .notes: NotesPage(notes: notes)
                         case .finances: FinancePage(finance: finance)
+                        case .clients: ClientsPage(store: store, finance: finance)
+                        case .review: ReviewPage(store: store, finance: finance)
                         }
                     }
                     .id(ui.page)
@@ -49,10 +53,12 @@ struct ContentView: View {
 
     private var buttonTitle: String {
         switch ui.page {
-        case .home, .today: "New task"
+        case .home, .today, .review: "New task"
+        case .calendar: "New event"
         case .habits: "New habit"
         case .notes: "New note"
         case .finances: "Refresh"
+        case .clients: "New client"
         }
     }
 
@@ -76,7 +82,7 @@ struct NavBar: View {
 
     var body: some View {
         ZStack {
-            HStack(spacing: 32) {
+            HStack(spacing: 24) {
                 ForEach(Page.allCases, id: \.self) { p in
                     NavLink(title: p.rawValue, active: ui.page == p) { ui.page = p }
                 }
