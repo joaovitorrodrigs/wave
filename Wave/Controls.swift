@@ -203,35 +203,26 @@ struct Spinner: View {
     }
 }
 
-/// `⋯` button with a small paper menu; closes when the pointer leaves.
+/// `⋯` button. The menu itself is drawn by ModalHost, above every row, and closes on a click anywhere else.
 struct MenuButton: View {
     var onDark = false
     let items: [(String, Bool, () -> Void)]   // title, destructive, action
-    @State private var open = false
+    @Environment(UI.self) private var ui
+    @State private var frame = CGRect.zero
 
     var body: some View {
-        Button { withAnimation(.easeOut(duration: 0.15)) { open.toggle() } } label: {
+        Button {
+            if ui.menu != nil { ui.closeMenu() } else { ui.openMenu(items, at: frame) }
+        } label: {
             Icon("dots-three", size: 18, color: onDark ? Theme.paper : Theme.ink)
                 .frame(width: 32, height: 32)
                 .background(onDark ? Theme.paper.opacity(0.15) : Theme.chip, in: RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
-        .overlay(alignment: .topTrailing) {
-            if open {
-                VStack(spacing: 2) {
-                    ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                        OptionRow(text: item.0, destructive: item.1) { open = false; item.2() }
-                    }
-                }
-                .frame(width: 160)
-                .padding(6)
-                .background(Theme.paper, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
-                .shadow(color: Theme.ink.opacity(0.18), radius: 14, x: 6, y: 10)
-                .offset(y: 38)
-                .onHover { if !$0 { withAnimation(.easeOut(duration: 0.15)) { open = false } } }
-                .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .topTrailing)))
-            }
-        }
-        .zIndex(open ? 10 : 0)
+        .background(GeometryReader { g in
+            Color.clear
+                .onAppear { frame = g.frame(in: .global) }
+                .onChange(of: g.frame(in: .global)) { _, new in frame = new }
+        })
     }
 }

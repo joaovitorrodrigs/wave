@@ -7,6 +7,16 @@ import SwiftData
     static let shared = UI()
     var page: Page = .home
     var modal: Modal?
+    var menu: MenuState?
+
+    /// Menus render in a window-level layer so rows below cannot cover them and leaving the row does not close them.
+    func openMenu(_ items: [(String, Bool, () -> Void)], at anchor: CGRect) {
+        withAnimation(.easeOut(duration: 0.15)) { menu = MenuState(items: items, anchor: anchor) }
+    }
+
+    func closeMenu() {
+        withAnimation(.easeOut(duration: 0.12)) { menu = nil }
+    }
 
     func open(_ modal: Modal) {
         withAnimation(.timingCurve(0.16, 1, 0.3, 1, duration: 0.35)) { self.modal = modal }
@@ -26,6 +36,11 @@ import SwiftData
         default: .newTask
         }
     }
+}
+
+struct MenuState {
+    let items: [(String, Bool, () -> Void)]   // title, destructive, action
+    let anchor: CGRect                        // the ⋯ button, in the window's coordinate space
 }
 
 enum Modal: Identifiable {
@@ -57,16 +72,32 @@ struct ModalHost: View {
     @Environment(UI.self) private var ui
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topLeading) {
+            if let menu = ui.menu {
+                Color.clear.contentShape(Rectangle()).ignoresSafeArea().onTapGesture { ui.closeMenu() }
+                VStack(spacing: 2) {
+                    ForEach(Array(menu.items.enumerated()), id: \.offset) { _, item in
+                        OptionRow(text: item.0, destructive: item.1) { ui.closeMenu(); item.2() }
+                    }
+                }
+                .frame(width: 180)
+                .padding(6)
+                .background(Theme.paper, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
+                .shadow(color: Theme.ink.opacity(0.18), radius: 14, x: 6, y: 10)
+                .offset(x: max(8, menu.anchor.maxX - 192), y: menu.anchor.maxY + 6)
+                .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .topTrailing)))
+            }
             if let modal = ui.modal {
                 Theme.ink.opacity(0.45).ignoresSafeArea()
                     .onTapGesture { ui.close() }
                     .transition(.opacity)
                 panel(modal)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .transition(.scale(scale: 0.96).combined(with: .opacity))
                 Button("") { ui.close() }.keyboardShortcut(.cancelAction).opacity(0).frame(width: 0, height: 0)
             }
         }
+        .ignoresSafeArea()
     }
 
     @ViewBuilder private func panel(_ modal: Modal) -> some View {
