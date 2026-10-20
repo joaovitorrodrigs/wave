@@ -128,6 +128,7 @@ struct HomePage: View {
 /// Light social-proof card: `rounded-4xl bg-ink/[0.04] p-8`.
 struct TodayCard: View {
     let events: [EKEvent]
+    @State private var gmail = Gmail.shared
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Icon("calendar-blank", size: 30)
@@ -146,11 +147,16 @@ struct TodayCard: View {
                 }
                 .padding(.top, 16)
             }
+            if gmail.connected {
+                Text(gmail.messages.isEmpty ? "Inbox zero." : "\(gmail.messages.count) unread email\(gmail.messages.count == 1 ? "" : "s").")
+                    .font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.5)).padding(.top, 16)
+            }
             Spacer(minLength: 0)
         }
         .padding(32)
         .frame(maxWidth: .infinity, minHeight: 300, alignment: .topLeading)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
+        .task { if gmail.connected, gmail.messages.isEmpty { await gmail.load() } }
     }
 }
 

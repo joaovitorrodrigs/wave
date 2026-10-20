@@ -125,6 +125,7 @@ struct TodayPage: View {
     @Binding var list: EKCalendar?
     @Environment(UI.self) private var ui
     @State private var newTitle = ""
+    @State private var gmail = Gmail.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -162,6 +163,29 @@ struct TodayPage: View {
                 .padding(.top, 20).rise(0.2)
             }
 
+            if list == nil, gmail.connected {
+                HStack(alignment: .firstTextBaseline) {
+                    Eyebrow(text: "Inbox")
+                    Spacer()
+                    if gmail.loading { Spinner() } else {
+                        Button { Task { await gmail.load() } } label: { Chip(text: "Refresh") }.buttonStyle(PressStyle())
+                    }
+                }
+                .padding(.top, 56).rise(0.15)
+                if let error = gmail.error {
+                    Text(error).font(.wave(14)).foregroundStyle(Theme.violet).padding(.top, 12)
+                }
+                if gmail.messages.isEmpty, !gmail.loading, gmail.error == nil {
+                    Text("Inbox zero. Nothing unread.").foregroundStyle(Theme.ink.opacity(0.6)).padding(.top, 16)
+                } else {
+                    VStack(spacing: 6) {
+                        ForEach(gmail.messages) { m in MailRow(message: m, store: store) }
+                    }
+                    .cardFrame()
+                    .padding(.top, 20).rise(0.2)
+                }
+            }
+
             Eyebrow(text: list == nil ? "Tasks" : list!.title).padding(.top, 56).rise(0.2)
             LazyVStack(spacing: 12) {
                 ForEach(Array(store.items.enumerated()), id: \.element.id) { i, r in
@@ -177,6 +201,7 @@ struct TodayPage: View {
             }
             .padding(.top, 20)
         }
+        .task { if gmail.connected, gmail.messages.isEmpty { await gmail.load() } }
     }
 
     private var summary: String {
@@ -197,6 +222,47 @@ struct TodayPage: View {
         try? store.add(newTitle, to: list)
         newTitle = ""
         reload()
+    }
+}
+
+/// FAQ-style row for an unread email; opens in Gmail, or becomes a task with the subject, sender and link.
+struct MailRow: View {
+    let message: Gmail.Message
+    let store: Store
+    @State private var hover = false
+    @State private var made = false
+
+    var body: some View {
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 8) {
+                    Text(message.from).font(.wave(14, .medium)).foregroundStyle(Theme.ink.opacity(0.6)).lineLimit(1)
+                    Text(message.date.formatted(.relative(presentation: .named))).font(.wave(13)).foregroundStyle(Theme.ink.opacity(0.4))
+                }
+                Text(message.subject).font(.wave(18, .medium)).tracking(-0.4).lineLimit(1)
+                Text(message.snippet).font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).lineLimit(1)
+            }
+            Spacer()
+            Button {
+                let r = EKReminder(eventStore: store.ek)
+                r.title = message.subject
+                r.notes = "From \(message.from)\n\(message.snippet)"
+                r.url = message.link
+                r.calendar = store.ek.defaultCalendarForNewReminders()
+                try? store.save(r)
+                made = true
+            } label: { Chip(text: made ? "Task added" : "Make a task", selected: made) }
+            .buttonStyle(PressStyle())
+            .disabled(made)
+            Icon(hover ? "arrow-up-right" : "envelope-simple", size: 18, color: Theme.ink.opacity(0.6))
+        }
+        .padding(.horizontal, 20).padding(.vertical, 14)
+        .cardBlock()
+        .overlay(RoundedRectangle(cornerRadius: Theme.radiusBlock).fill(Theme.ink.opacity(hover ? 0.04 : 0)).allowsHitTesting(false))
+        .contentShape(Rectangle())
+        .onTapGesture { NSWorkspace.shared.open(message.link) }
+        .onHover { hover = $0 }
+        .animation(.easeOut(duration: 0.2), value: hover)
     }
 }
 

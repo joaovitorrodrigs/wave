@@ -44,10 +44,23 @@ No exceptions.
   nested cards (`rounded-3xl p-1.5` frame with `rounded-[18px]` paper blocks, ink + violet when
   highlighted), dark section (`rounded-[40px] bg-black` + grain, `#121212` cards), chips,
   long shadows, fade-and-rise on appear with the site's easing. Tokens from the wiki page
-  `marca-visual` and `repos/site/src`. Icons are SF Symbols (bold/fill), not Phosphor.
+  `marca-visual` and `repos/site/src`. Icons are Phosphor (fill) through the PhosphorSwift package, by kebab-case name via `Icon`.
+- Nothing native in the UI. No sheets, DatePicker, Picker, Toggle, context menus, ProgressView or
+  Settings scene: modals are overlays (`UI.swift`), controls live in `Controls.swift` (Switch,
+  Select, DateField with the month grid, TimeRow, Spinner, MenuButton). Text inputs are styled
+  TextFields. The only system chrome left is window frames, the menu bar popover and permission
+  dialogs.
+- Pages: Home (dashboard), Today (tasks, events, Gmail inbox), Calendar (week/month, events
+  read-write), Habits, Notes, Finances (accounts, Stripe, categories), Clients (name-matched
+  tasks/events/notes/payments, SwiftData `Client`), Review (week: done tasks, habits, money).
+- System: menu bar panel (`MenuBar.swift`), global quick add ⌘⇧Space via Carbon hot key and a
+  non-activating panel (`QuickAdd.swift`), 8:00 summary notification (`Morning.swift`), App
+  Intents for Siri/Shortcuts (`Intents.swift`), ⌘1-8 pages, ⌘N new item, ⌘K palette, ⌘, settings.
+- Gmail: read-only, user-supplied OAuth client (Desktop app), PKCE + loopback listener on
+  127.0.0.1, refresh token in Keychain (`Gmail.swift`). Stripe: restricted key in Keychain,
+  balance and this month's charges. Keys never leave the Keychain; nothing is hardcoded.
 - Everything in English. Localization only when someone asks.
 - No work/personal split yet. Reminders lists separate them for now.
-- Gmail: not in v1.
 
 - Home: the dashboard and landing page of the app, modeled on the site's Home: hero with
   greeting and summary, the three social-proof cards (today's events, money in the dark card,

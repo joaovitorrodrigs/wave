@@ -179,8 +179,12 @@ struct TransactionRow: View {
 struct SettingsPanel: View {
     @State private var key = Keychain.get(Finance.keyAccount) ?? ""
     @State private var stripe = Keychain.get(Finance.stripeAccount) ?? ""
+    @State private var googleID = Keychain.get(Gmail.clientAccount) ?? ""
+    @State private var googleSecret = Keychain.get(Gmail.secretAccount) ?? ""
+    @State private var gmail = Gmail.shared
 
     var body: some View {
+        ScrollView {
         VStack(alignment: .leading, spacing: 16) {
             PanelTitle(text: "Settings")
             Text("Banco MCP").font(.wave(16, .medium)).padding(.top, 8)
@@ -192,10 +196,33 @@ struct SettingsPanel: View {
             SecureField("rk_live_… (restricted key, read only)", text: $stripe).waveField()
             Text("Shows this month's revenue and the available balance on the Finances page. Make a restricted key with read access to Balance and Charges.")
                 .font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(3)
+            Text("Gmail").font(.wave(16, .medium)).padding(.top, 12)
+            TextField("OAuth client ID (…apps.googleusercontent.com)", text: $googleID).waveField()
+            SecureField("OAuth client secret", text: $googleSecret).waveField()
+            Text("In Google Cloud, enable the Gmail API and create an OAuth client of type Desktop app. Wave only reads unread mail; the refresh token stays in your Keychain.")
+                .font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(3)
+            HStack(spacing: 12) {
+                if gmail.connected {
+                    Chip(text: "Connected", selected: true)
+                    SecondaryButton(title: "Disconnect") { gmail.disconnect() }
+                } else if gmail.connecting {
+                    Spinner()
+                    Text("Finish in the browser…").font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6))
+                } else {
+                    PrimaryButton(title: "Connect Google account") { Task { await gmail.connect() } }
+                        .disabled(!gmail.hasClient).opacity(gmail.hasClient ? 1 : 0.4)
+                }
+            }
+            if let error = gmail.error { Text(error).font(.wave(13)).foregroundStyle(Theme.violet) }
             Text("Quick add from anywhere: ⌘⇧Space. Siri: “Add a task in Wave”.").font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).padding(.top, 12)
         }
-        .panel(width: 500)
+        }
+        .scrollIndicators(.hidden)
+        .frame(maxHeight: 760)
+        .panel(width: 520)
         .onChange(of: key) { Keychain.set(key, account: Finance.keyAccount) }
         .onChange(of: stripe) { Keychain.set(stripe, account: Finance.stripeAccount) }
+        .onChange(of: googleID) { Keychain.set(googleID, account: Gmail.clientAccount) }
+        .onChange(of: googleSecret) { Keychain.set(googleSecret, account: Gmail.secretAccount) }
     }
 }

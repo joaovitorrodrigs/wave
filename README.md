@@ -35,6 +35,22 @@ For bank data, create a read-only key at https://app.mcp.ai/settings/api-keys an
 Settings (⌘,). It lives in your Keychain; the last fetch is cached in
 `~/Library/Application Support/Wave/finance.json`.
 
+## What it does
+
+- **Home**: greeting, today's events, bank balance, habits to tap, month calendar, tasks due this week, recent notes.
+- **Today**: tasks from Reminders (date, time, alert, repeat, list, priority, URL), today's events, unread Gmail with "make a task".
+- **Calendar**: week and month views, create and edit events in your Mac calendars.
+- **Habits**: HabitKit-style cards with a half-year grid and streaks, stored locally.
+- **Notes**: Apple Notes, listed, searched and created from here; editing opens Notes.
+- **Finances**: accounts and transactions from Banco MCP, spending by category against last month, Stripe revenue.
+- **Clients**: everything that carries a client's name, in one place.
+- **Review**: the week in three cards.
+- Menu bar panel, ⌘⇧Space quick add from any app, 8:00 morning summary, Siri ("Add a task in Wave"), ⌘K search.
+
+Gmail needs your own OAuth client: in Google Cloud enable the Gmail API, create an OAuth client of
+type Desktop app, paste its ID and secret in Settings (⌘,) and connect. Stripe takes a restricted
+key with read access to Balance and Charges.
+
 ## Command line
 
 ```
