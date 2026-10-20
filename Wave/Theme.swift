@@ -5,12 +5,14 @@ import PhosphorSwift
 /// Phosphor icon by kebab-case name. Like the site: `bold` for arrows, carets and controls, `fill` for feature icons.
 /// Old SF Symbol names stored in habits still resolve.
 struct Icon: View {
+    enum Weight { case regular, bold, fill }
+
     let name: String
     var size: CGFloat = 20
     var color: Color = Theme.ink
-    var weight: Ph.IconWeight = .bold
+    var weight: Weight = .bold
 
-    init(_ name: String, size: CGFloat = 20, color: Color = Theme.ink, weight: Ph.IconWeight = .bold) {
+    init(_ name: String, size: CGFloat = 20, color: Color = Theme.ink, weight: Weight = .bold) {
         self.name = name; self.size = size; self.color = color; self.weight = weight
     }
 
@@ -20,9 +22,13 @@ struct Icon: View {
     ]
 
     var body: some View {
-        (Ph(rawValue: name) ?? Ph(rawValue: Icon.legacy[name] ?? "") ?? .circle)
-            .weight(weight).color(color)
-            .frame(width: size, height: size)
+        let ph = Ph(rawValue: name) ?? Ph(rawValue: Icon.legacy[name] ?? "") ?? .circle
+        let image: Image = switch weight {
+        case .regular: ph.regular
+        case .bold: ph.bold
+        case .fill: ph.fill
+        }
+        image.color(color).frame(width: size, height: size)
     }
 }
 
