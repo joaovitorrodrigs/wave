@@ -14,13 +14,13 @@ No exceptions.
 
 - Tasks and agenda live in Apple Reminders and Calendar, read/written via EventKit.
   Wave is the interface, not the store.
-- Notes live in Apple Notes, accessed via AppleScript: list, search, create.
-  Editing opens Notes.app.
+- Notes live in Wave's own store (SwiftData `Note`: title, plain text, dates). Notes page is
+  list plus editor, saved as you type. CLI and Siri write to the same store; the page re-fetches
+  when the app becomes active. Settings has a one-shot "Import from Apple Notes" (AppleScript,
+  read-only). Decided 2026-10-20: one environment beats iPhone sync for João.
 - Habits: HabitKit-style. Name, color, icon, set of completed days, GitHub-style
   grid, computed streak. Stored in SwiftData, local only, no iCloud, at
-  `~/Library/Application Support/Wave/wave.store`. App only: no CLI for habits until
-  someone asks Claude to check a habit (a second process writing the store needs
-  change notifications the app does not have yet).
+  `~/Library/Application Support/Wave/wave.store`. No CLI for habits yet.
 - Finances: read-only mirror of Banco MCP REST API (`api.mcp.ai/api/openfinance`, all
   POST with JSON bodies; `GET /_endpoints` lists them). Accounts with balances and the last
   30 days of transactions, cached in `~/Library/Application Support/Wave/finance.json`.
@@ -51,14 +51,20 @@ No exceptions.
   TextFields. The only system chrome left is window frames, the menu bar popover and permission
   dialogs.
 - Pages: Home (dashboard), Today (tasks, events, Gmail inbox), Calendar (week/month, events
-  read-write), Habits, Notes, Finances (accounts, Stripe, categories), Clients (name-matched
-  tasks/events/notes/payments, SwiftData `Client`), Review (week: done tasks, habits, money).
+  read-write), Habits, Notes (own store), Finances (accounts, Stripe, categories), Clients
+  (name-matched tasks/events/notes/payments, SwiftData `Client`), Review (week: done tasks,
+  habits, money). Store lives in `Shared/Database.swift` (Habit, Client, Note).
 - System: menu bar panel (`MenuBar.swift`), global quick add ⌘⇧Space via Carbon hot key and a
   non-activating panel (`QuickAdd.swift`), 8:00 summary notification (`Morning.swift`), App
   Intents for Siri/Shortcuts (`Intents.swift`), ⌘1-8 pages, ⌘N new item, ⌘K palette, ⌘, settings.
 - Gmail: read-only, user-supplied OAuth client (Desktop app), PKCE + loopback listener on
   127.0.0.1, refresh token in Keychain (`Gmail.swift`). Stripe: restricted key in Keychain,
   balance and this month's charges. Keys never leave the Keychain; nothing is hardcoded.
+- Dark mode: flat black canvas, ink and paper swap, `#121212` card becomes light gray, shadows
+  stay black, grain only on the dark sections. Setting System/Light/Dark in `@AppStorage("theme")`.
+- Navigation is the Dock (`Dock.swift`, port of skecher-ui's dock): magnification only, no hover
+  highlight, violet for the active page, search and settings after a separator.
+- Danger red `#DC2F3A` (not on the site) for delete, overdue, errors, rising spend.
 - Everything in English. Localization only when someone asks.
 - No work/personal split yet. Reminders lists separate them for now.
 

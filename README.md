@@ -3,9 +3,9 @@
 One native macOS app for your tasks, agenda, habits, notes and personal finances.
 
 Wave is an interface over what your Mac already has: Reminders and Calendar
-(via EventKit), Apple Notes (via AppleScript), plus a local store for habits
-(HabitKit-style grid and streaks, in `~/Library/Application Support/Wave/`)
-and a read-only mirror of your bank through Banco MCP. Your data stays where
+(via EventKit), plus a local store for notes, habits and clients
+(in `~/Library/Application Support/Wave/`) and a read-only mirror of your bank
+through Banco MCP. Your data stays where
 it is and syncs to your iPhone through Apple's own apps.
 
 Ships with a `wave` command-line tool so agents like Claude can create tasks
@@ -41,7 +41,7 @@ Settings (⌘,). It lives in your Keychain; the last fetch is cached in
 - **Today**: tasks from Reminders (date, time, alert, repeat, list, priority, URL), today's events, unread Gmail with "make a task".
 - **Calendar**: week and month views, create and edit events in your Mac calendars.
 - **Habits**: HabitKit-style cards with a half-year grid and streaks, stored locally.
-- **Notes**: Apple Notes, listed, searched and created from here; editing opens Notes.
+- **Notes**: written and kept in Wave, list and editor side by side, saved as you type. One-click import from Apple Notes.
 - **Finances**: accounts and transactions from Banco MCP, spending by category against last month, Stripe revenue.
 - **Clients**: everything that carries a client's name, in one place.
 - **Review**: the week in three cards.
