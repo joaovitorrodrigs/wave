@@ -8,6 +8,12 @@ import SwiftData
     var page: Page = .home
     var modal: Modal?
     var menu: MenuState?
+    /// Notes page reads these: a note to select, or a request to create one.
+    var noteToOpen: Note?
+    var noteRequest = 0
+
+    func openNote(_ note: Note) { noteToOpen = note; page = .notes }
+    func requestNewNote() { page = .notes; noteRequest += 1 }
 
     /// Menus render in a window-level layer so rows below cannot cover them and leaving the row does not close them.
     func openMenu(_ items: [(String, Bool, () -> Void)], at anchor: CGRect) {
@@ -30,7 +36,6 @@ import SwiftData
     var newItem: Modal {
         switch page {
         case .habits: .newHabit
-        case .notes: .newNote
         case .calendar: .newEvent(.now)
         case .clients: .newClient
         default: .newTask
@@ -44,7 +49,7 @@ struct MenuState {
 }
 
 enum Modal: Identifiable {
-    case newTask, editTask(EKReminder), newHabit, editHabit(Habit), newNote, settings, palette
+    case newTask, editTask(EKReminder), newHabit, editHabit(Habit), settings, palette
     case newEvent(Date), editEvent(EKEvent), newClient, editClient(Client)
 
     var id: String {
@@ -53,7 +58,6 @@ enum Modal: Identifiable {
         case .editTask(let r): "task-\(r.calendarItemIdentifier)"
         case .newHabit: "newHabit"
         case .editHabit(let h): "habit-\(h.persistentModelID)"
-        case .newNote: "newNote"
         case .settings: "settings"
         case .palette: "palette"
         case .newEvent(let d): "event-\(d.timeIntervalSince1970)"
@@ -67,7 +71,6 @@ enum Modal: Identifiable {
 /// Dimmed canvas with the panel on top; the site's modal, not a sheet window.
 struct ModalHost: View {
     let store: Store
-    let notes: Notes
     let finance: Finance
     @Environment(UI.self) private var ui
 
@@ -106,9 +109,8 @@ struct ModalHost: View {
         case .editTask(let r): TaskEditor(store: store, reminder: r)
         case .newHabit: HabitEditor(habit: nil)
         case .editHabit(let h): HabitEditor(habit: h)
-        case .newNote: NoteEditor(notes: notes)
         case .settings: SettingsPanel()
-        case .palette: Palette(store: store, notes: notes)
+        case .palette: Palette(store: store)
         case .newEvent(let d): EventEditor(store: store, event: nil, day: d)
         case .editEvent(let e): EventEditor(store: store, event: e, day: e.startDate)
         case .newClient: ClientEditor(client: nil)

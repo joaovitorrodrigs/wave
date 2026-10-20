@@ -5,8 +5,9 @@ import EventKit
 /// The site's Home, as a dashboard: hero, the three social-proof cards, a featured grid (calendar), rows, FAQ rows.
 struct HomePage: View {
     let store: Store
-    let notes: Notes
     let finance: Finance
+    @Environment(\.modelContext) private var context
+    @State private var notes: [Note] = []
     @Environment(UI.self) private var ui
     @Query(sort: \Habit.created) private var habits: [Habit]
     @State private var upcoming: [EKReminder] = []
@@ -51,7 +52,7 @@ struct HomePage: View {
                 SecondaryButton(title: "See all \(upcoming.count)") { ui.page = .today }.padding(.top, 20)
             }
 
-            if !notes.items.isEmpty {
+            if !notes.isEmpty {
                 HStack(alignment: .firstTextBaseline) {
                     Text("Recent notes").font(.wave(36, .medium)).tracking(-0.9)
                     Spacer()
@@ -59,7 +60,7 @@ struct HomePage: View {
                 }
                 .padding(.top, 96)
                 VStack(spacing: 6) {
-                    ForEach(notes.items.prefix(4)) { note in NoteRow(note: note) { notes.open(note) } }
+                    ForEach(notes) { note in NoteRow(note: note, selected: false) { ui.openNote(note) } }
                 }
                 .cardFrame()
                 .padding(.top, 40)
@@ -68,9 +69,9 @@ struct HomePage: View {
         .task { await load() }
         .task(id: month) { await loadMonth() }
         .task {
+            notes = Note.fetch(context, limit: 4)
             finance.load()
             if finance.hasKey, finance.fetched.map({ Date.now.timeIntervalSince($0) > 3600 }) ?? true { await finance.refresh() }
-            if notes.items.isEmpty { await notes.load() }
         }
         .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged)) { _ in Task { await load(); await loadMonth() } }
     }

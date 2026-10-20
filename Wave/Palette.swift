@@ -5,8 +5,8 @@ import EventKit
 /// ⌘K: one field that finds pages, tasks, notes and habits, or creates a task from what you typed.
 struct Palette: View {
     let store: Store
-    let notes: Notes
     @Environment(UI.self) private var ui
+    @Environment(\.modelContext) private var context
     @Query(sort: \Habit.created) private var habits: [Habit]
     @State private var query = ""
     @State private var tasks: [EKReminder] = []
@@ -18,7 +18,7 @@ struct Palette: View {
             switch self {
             case .page(let p): "page-\(p.rawValue)"
             case .task(let r): "task-\(r.calendarItemIdentifier)"
-            case .note(let n): "note-\(n.id)"
+            case .note(let n): "note-\(n.persistentModelID)"
             case .habit(let h): "habit-\(h.persistentModelID)"
             case .create: "create"
             }
@@ -56,7 +56,7 @@ struct Palette: View {
         guard !q.isEmpty else { return Page.allCases.map { .page($0) } }
         var out: [Hit] = Page.allCases.filter { $0.rawValue.localizedCaseInsensitiveContains(q) }.map { .page($0) }
         out += tasks.filter { ($0.title ?? "").localizedCaseInsensitiveContains(q) }.prefix(5).map { .task($0) }
-        out += notes.items.filter { $0.title.localizedCaseInsensitiveContains(q) }.prefix(4).map { .note($0) }
+        out += Note.fetch(context, query: q, limit: 4).map { .note($0) }
         out += habits.filter { $0.name.localizedCaseInsensitiveContains(q) }.prefix(3).map { .habit($0) }
         out.append(.create(q))
         return out
@@ -76,7 +76,7 @@ struct Palette: View {
         switch hit {
         case .page(let p): ui.page = p; ui.close()
         case .task(let r): ui.modal = .editTask(r)
-        case .note(let n): notes.open(n); ui.close()
+        case .note(let n): ui.openNote(n); ui.close()
         case .habit(let h): h.toggle(.now); ui.close()
         case .create(let q): try? store.add(q, to: nil); ui.close()
         }

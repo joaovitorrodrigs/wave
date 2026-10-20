@@ -1,5 +1,6 @@
 import EventKit
 import Foundation
+import SwiftData
 
 // macOS attributes a CLI's privacy permissions to the app that launched it (Terminal, Cursor,
 // Claude Code). Hosts without a Reminders usage string get a silent deny and no prompt.
@@ -132,14 +133,15 @@ func run() async throws {
         print("Done: \(r.title ?? "")")
     case "note add":
         guard let title = args.first else { usage() }
-        let id = try await Notes().create(title: title, text: args.dropFirst().first ?? "")
-        if json { printJSON(["id": id, "title": title]) } else { print("Created: \(title)") }
+        let context = ModelContext(Database.container)
+        let note = Note(title: title, text: args.dropFirst().first ?? "")
+        context.insert(note)
+        try context.save()
+        if json { printJSON(["title": title, "created": iso.string(from: note.created)]) } else { print("Created: \(title)") }
     case "note list":
-        let notes = Notes()
-        await notes.load(query: args.first ?? "")
-        if let error = notes.error { print(error); exit(1) }
-        if json { printJSON(notes.items.map { ["id": $0.id, "title": $0.title, "modified": iso.string(from: $0.modified)] }); return }
-        for n in notes.items { print("\(n.id)  \(n.title)  \(n.modified.formatted(date: .abbreviated, time: .shortened))") }
+        let notes = Note.fetch(ModelContext(Database.container), query: args.first ?? "")
+        if json { printJSON(notes.map { ["title": $0.title, "text": $0.text, "modified": iso.string(from: $0.modified)] }); return }
+        for n in notes { print("\(n.title)  \(n.modified.formatted(date: .abbreviated, time: .shortened))\(n.firstLine.isEmpty ? "" : "  · " + n.firstLine.prefix(60))") }
     default:
         usage()
     }

@@ -9,7 +9,6 @@ enum Page: String, CaseIterable {
 struct ContentView: View {
     @State private var ui = UI.shared
     @State private var store = Store()
-    @State private var notes = Notes()
     @State private var finance = Finance()
     @State private var list: EKCalendar?
     @AppStorage("theme") private var theme = "system"
@@ -21,11 +20,11 @@ struct ContentView: View {
                 ScrollView {
                     Group {
                         switch ui.page {
-                        case .home: HomePage(store: store, notes: notes, finance: finance)
+                        case .home: HomePage(store: store, finance: finance)
                         case .today: TodayPage(store: store, list: $list)
                         case .calendar: CalendarPage(store: store)
                         case .habits: HabitsPage()
-                        case .notes: NotesPage(notes: notes)
+                        case .notes: NotesPage()
                         case .finances: FinancePage(finance: finance)
                         case .clients: ClientsPage(store: store, finance: finance)
                         case .review: ReviewPage(store: store, finance: finance)
@@ -48,7 +47,7 @@ struct ContentView: View {
                 ])
                 .padding(.bottom, 24)
             }
-            ModalHost(store: store, notes: notes, finance: finance)
+            ModalHost(store: store, finance: finance)
         }
         .environment(ui)
         .background(CanvasBackground())
@@ -74,7 +73,11 @@ struct ContentView: View {
     }
 
     private func primaryAction() {
-        if ui.page == .finances { Task { await finance.refresh() } } else { ui.open(ui.newItem) }
+        switch ui.page {
+        case .finances: Task { await finance.refresh() }
+        case .notes: ui.requestNewNote()
+        default: ui.open(ui.newItem)
+        }
     }
 
     private func refresh() async {

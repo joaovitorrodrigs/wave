@@ -15,12 +15,12 @@ import SwiftData
         WindowGroup {
             ContentView()
         }
-        .modelContainer(Habit.container)
+        .modelContainer(Database.container)
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1240, height: 860)
         .commands {
             CommandGroup(replacing: .newItem) {
-                Button("New Item") { UI.shared.open(UI.shared.newItem) }.keyboardShortcut("n")
+                Button("New Item") { if UI.shared.page == .notes { UI.shared.requestNewNote() } else { UI.shared.open(UI.shared.newItem) } }.keyboardShortcut("n")
                 Button("Search") { UI.shared.open(.palette) }.keyboardShortcut("k")
             }
             CommandGroup(replacing: .appSettings) {
@@ -35,6 +35,6 @@ import SwiftData
 
         MenuBarExtra("Wave", image: "MenuBarIcon") { MenuBarPanel() }
             .menuBarExtraStyle(.window)
-            .modelContainer(Habit.container)
+            .modelContainer(Database.container)
     }
 }

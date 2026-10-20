@@ -25,7 +25,7 @@ enum Morning {
         let dayEnd = cal.date(byAdding: .day, value: 1, to: dayStart)!
         let events = await store.events(from: dayStart, to: dayEnd)
         let tasks = await store.reminders(matching: store.ek.predicateForIncompleteReminders(withDueDateStarting: nil, ending: dayEnd, calendars: nil))
-        let habits = (try? ModelContext(Habit.container).fetchCount(FetchDescriptor<Habit>())) ?? 0
+        let habits = (try? ModelContext(Database.container).fetchCount(FetchDescriptor<Habit>())) ?? 0
 
         let content = UNMutableNotificationContent()
         content.title = "Good morning. " + fire.formatted(.dateTime.weekday(.wide).month(.wide).day()) + "."

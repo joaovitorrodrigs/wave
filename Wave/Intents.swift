@@ -1,4 +1,5 @@
 import AppIntents
+import SwiftData
 
 struct AddTaskIntent: AppIntent {
     static let title: LocalizedStringResource = "Add Task"
@@ -30,8 +31,10 @@ struct AddNoteIntent: AppIntent {
     static var parameterSummary: some ParameterSummary { Summary("Add note \(\.$title)") { \.$text } }
 
     @MainActor func perform() async throws -> some IntentResult & ProvidesDialog {
-        try await Notes().create(title: title, text: text)
-        return .result(dialog: IntentDialog("Saved \(title) to Notes."))
+        let context = ModelContext(Database.container)
+        context.insert(Note(title: title, text: text))
+        try context.save()
+        return .result(dialog: IntentDialog("Saved \(title) in Wave."))
     }
 }
 

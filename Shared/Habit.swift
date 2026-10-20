@@ -39,12 +39,6 @@ import SwiftUI
         return n
     }
 
-    static let container: ModelContainer = {
-        let url = URL.applicationSupportDirectory.appending(path: "Wave/wave.store")
-        try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        return try! ModelContainer(for: Habit.self, Client.self, configurations: ModelConfiguration(url: url))
-    }()
-
     #if DEBUG
     static func selfCheck() {
         let cal = Calendar.current, today = cal.startOfDay(for: .now)

@@ -2,12 +2,6 @@ import SwiftUI
 import SwiftData
 import EventKit
 
-@Model final class Client {
-    var name: String
-    var created = Date.now
-    init(name: String) { self.name = name }
-}
-
 /// One page per client: open tasks, coming events, notes and payments that carry the client's name.
 struct ClientsPage: View {
     let store: Store
@@ -18,7 +12,7 @@ struct ClientsPage: View {
     @State private var selected: Client?
     @State private var tasks: [EKReminder] = []
     @State private var events: [EKEvent] = []
-    @State private var notes = Notes()
+    @State private var notes: [Note] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -64,9 +58,9 @@ struct ClientsPage: View {
                                 row(e.title ?? "", detail: e.startDate.formatted(.dateTime.day().month(.abbreviated).hour().minute())) { ui.open(.editEvent(e)) }
                             }
                         }
-                        block("Notes", count: notes.items.count) {
-                            ForEach(notes.items.prefix(6)) { n in
-                                row(n.title, detail: n.modified.formatted(.relative(presentation: .named))) { notes.open(n) }
+                        block("Notes", count: notes.count) {
+                            ForEach(notes.prefix(6)) { n in
+                                row(n.title, detail: n.modified.formatted(.relative(presentation: .named))) { ui.openNote(n) }
                             }
                         }
                         block("Payments", count: money.count) {
@@ -126,7 +120,7 @@ struct ClientsPage: View {
         let cal = Calendar.current
         events = await store.events(from: cal.date(byAdding: .day, value: -30, to: .now)!, to: cal.date(byAdding: .day, value: 90, to: .now)!)
             .filter { ($0.title ?? "").localizedCaseInsensitiveContains(name) }
-        await notes.load(query: name)
+        notes = Note.fetch(context, query: name)
     }
 }
 

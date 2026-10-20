@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct FinancePage: View {
     let finance: Finance
@@ -182,6 +183,8 @@ struct SettingsPanel: View {
     @State private var googleID = Keychain.get(Gmail.clientAccount) ?? ""
     @State private var googleSecret = Keychain.get(Gmail.secretAccount) ?? ""
     @State private var gmail = Gmail.shared
+    @State private var imported: String?
+    @Environment(\.modelContext) private var context
 
     var body: some View {
         ScrollView {
@@ -189,6 +192,18 @@ struct SettingsPanel: View {
             PanelTitle(text: "Settings")
             Text("Appearance").font(.wave(16, .medium)).padding(.top, 8)
             ThemePicker()
+            Text("Notes").font(.wave(16, .medium)).padding(.top, 12)
+            HStack(spacing: 12) {
+                SecondaryButton(title: "Import from Apple Notes") {
+                    Task {
+                        do { imported = "\(try await AppleNotesImport.run(into: context)) notes copied." }
+                        catch { imported = error.localizedDescription }
+                    }
+                }
+                if let imported { Text(imported).font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)) }
+            }
+            Text("Copies every note's title and text into Wave once. Apple Notes is left as it is.")
+                .font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(3)
             Text("Banco MCP").font(.wave(16, .medium)).padding(.top, 12)
             SecureField("sk_live_…", text: $key).waveField()
             Text("Read-only access to your bank accounts through Banco MCP (Open Finance Brasil). Kept in the macOS Keychain.")
