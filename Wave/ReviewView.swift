@@ -75,7 +75,7 @@ struct ReviewPage: View {
                 .padding(32)
                 .frame(maxWidth: .infinity, minHeight: 320, alignment: .topLeading)
                 .background(Theme.ink, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
-                .shadow(color: Theme.ink.opacity(0.4), radius: 16, x: 16, y: 24)
+                .shadow(color: Theme.shadow.opacity(0.4), radius: 16, x: 16, y: 24)
                 .rise(0.2)
 
                 card {

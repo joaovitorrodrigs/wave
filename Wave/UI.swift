@@ -83,7 +83,7 @@ struct ModalHost: View {
                 .frame(width: 180)
                 .padding(6)
                 .background(Theme.paper, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
-                .shadow(color: Theme.ink.opacity(0.18), radius: 14, x: 6, y: 10)
+                .shadow(color: Theme.shadow.opacity(0.18), radius: 14, x: 6, y: 10)
                 .offset(x: max(8, menu.anchor.maxX - 192), y: menu.anchor.maxY + 6)
                 .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .topTrailing)))
             }
@@ -127,7 +127,7 @@ struct Panel: ViewModifier {
             .font(.wave(16))
             .foregroundStyle(Theme.ink)
             .background(Theme.paper, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
-            .shadow(color: Theme.ink.opacity(0.25), radius: 16, x: 16, y: 24)
+            .shadow(color: Theme.shadow.opacity(0.25), radius: 16, x: 16, y: 24)
     }
 }
 

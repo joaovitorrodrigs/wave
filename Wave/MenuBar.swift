@@ -6,6 +6,7 @@ import EventKit
 struct MenuBarPanel: View {
     @State private var store = Store()
     @Query(sort: \Habit.created) private var habits: [Habit]
+    @AppStorage("theme") private var theme = "system"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -60,10 +61,10 @@ struct MenuBarPanel: View {
         }
         .padding(20)
         .frame(width: 380)
-        .background(Theme.paper)
+        .background(CanvasBackground())
         .font(.wave(15))
         .foregroundStyle(Theme.ink)
-        .preferredColorScheme(.light)
+        .preferredColorScheme(Theme.scheme(theme))
         .task { await store.load(); await store.fetch(.today); await store.fetchEvents() }
         .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged)) { _ in
             Task { await store.fetch(.today); await store.fetchEvents() }

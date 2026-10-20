@@ -12,7 +12,7 @@ struct Switch: View {
                 Capsule().fill(isOn ? Theme.ink : Theme.ink.opacity(0.12))
                     .frame(width: 44, height: 26)
                     .overlay(alignment: isOn ? .trailing : .leading) {
-                        Circle().fill(Theme.paper).padding(3).shadow(color: Theme.ink.opacity(0.25), radius: 2, y: 1)
+                        Circle().fill(Theme.paper).padding(3).shadow(color: Theme.shadow.opacity(0.25), radius: 2, y: 1)
                     }
             }
             .contentShape(Rectangle())

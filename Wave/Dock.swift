@@ -45,7 +45,7 @@ struct Dock: View {
                             Text(item.label).font(.wave(13, .medium)).foregroundStyle(Theme.ink)
                                 .padding(.horizontal, 12).padding(.vertical, 6)
                                 .background(Theme.paper, in: RoundedRectangle(cornerRadius: 10))
-                                .shadow(color: Theme.ink.opacity(0.2), radius: 8, y: 6)
+                                .shadow(color: Theme.shadow.opacity(0.2), radius: 8, y: 6)
                                 .fixedSize()
                                 .offset(y: -42)
                                 .allowsHitTesting(false)
@@ -57,7 +57,7 @@ struct Dock: View {
         }
         .padding(8)
         .background(Theme.ink, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
-        .shadow(color: Theme.ink.opacity(0.35), radius: 20, y: 14)
+        .shadow(color: Theme.shadow.opacity(0.35), radius: 20, y: 14)
         .coordinateSpace(name: "dock")
         .onContinuousHover { phase in
             switch phase {

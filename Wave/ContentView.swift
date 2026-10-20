@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var notes = Notes()
     @State private var finance = Finance()
     @State private var list: EKCalendar?
+    @AppStorage("theme") private var theme = "system"
 
     var body: some View {
         ZStack {
@@ -50,11 +51,11 @@ struct ContentView: View {
             ModalHost(store: store, notes: notes, finance: finance)
         }
         .environment(ui)
-        .background(Theme.paper)
+        .background(CanvasBackground())
         .font(.wave(16))
         .foregroundStyle(Theme.ink)
         .tint(Theme.violet)
-        .preferredColorScheme(.light)
+        .preferredColorScheme(Theme.scheme(theme))
         .frame(minWidth: 900, minHeight: 600)
         .task { await store.load(); await refresh() }
         .onChange(of: list) { Task { await refresh() } }
@@ -289,7 +290,7 @@ struct TaskRow: View {
         .foregroundStyle(fg)
         .padding(.horizontal, 32).padding(.vertical, 12)
         .background(today ? Theme.violet : Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
-        .shadow(color: Theme.ink.opacity(today ? 0.25 : 0), radius: 16, x: 16, y: 24)
+        .shadow(color: Theme.shadow.opacity(today ? 0.25 : 0), radius: 16, x: 16, y: 24)
         .contentShape(Rectangle())
         .onTapGesture { ui.open(.editTask(reminder)) }
         .onHover { hover = $0 }

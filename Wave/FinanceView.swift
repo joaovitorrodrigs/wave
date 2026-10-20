@@ -187,7 +187,9 @@ struct SettingsPanel: View {
         ScrollView {
         VStack(alignment: .leading, spacing: 16) {
             PanelTitle(text: "Settings")
-            Text("Banco MCP").font(.wave(16, .medium)).padding(.top, 8)
+            Text("Appearance").font(.wave(16, .medium)).padding(.top, 8)
+            ThemePicker()
+            Text("Banco MCP").font(.wave(16, .medium)).padding(.top, 12)
             SecureField("sk_live_…", text: $key).waveField()
             Text("Read-only access to your bank accounts through Banco MCP (Open Finance Brasil). Kept in the macOS Keychain.")
                 .font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(3)

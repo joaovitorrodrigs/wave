@@ -58,6 +58,7 @@ struct QuickAddView: View {
     @State private var text = ""
     @State private var store = Store()
     @FocusState private var focused: Bool
+    @AppStorage("theme") private var theme = "system"
 
     var body: some View {
         HStack(spacing: 16) {
@@ -68,11 +69,11 @@ struct QuickAddView: View {
         }
         .padding(.horizontal, 28).padding(.vertical, 22)
         .background(Theme.paper, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
-        .shadow(color: Theme.ink.opacity(0.3), radius: 16, x: 16, y: 24)
+        .shadow(color: Theme.shadow.opacity(0.3), radius: 16, x: 16, y: 24)
         .padding(.horizontal, 40).padding(.top, 40).padding(.bottom, 64)
         .font(.wave(16))
         .foregroundStyle(Theme.ink)
-        .preferredColorScheme(.light)
+        .preferredColorScheme(Theme.scheme(theme))
         .onAppear { focused = true; Task { await store.load() } }
         .onExitCommand(perform: close)
     }

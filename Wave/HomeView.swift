@@ -188,7 +188,7 @@ struct MoneyCard: View {
         .padding(32)
         .frame(maxWidth: .infinity, minHeight: 300, alignment: .topLeading)
         .background(Theme.ink, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
-        .shadow(color: Theme.ink.opacity(0.4), radius: 16, x: 16, y: 24)
+        .shadow(color: Theme.shadow.opacity(0.4), radius: 16, x: 16, y: 24)
     }
 }
 
@@ -212,7 +212,7 @@ struct HabitsDeck: View {
                     .padding(.horizontal, 24)
                     .frame(height: 64)
                     .background(Theme.paper, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
-                    .shadow(color: Theme.ink.opacity(0.06), radius: 10, y: 10)
+                    .shadow(color: Theme.shadow.opacity(0.06), radius: 10, y: 10)
                 }
                 .buttonStyle(PressStyle())
             }

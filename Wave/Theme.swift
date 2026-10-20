@@ -34,16 +34,32 @@ struct Icon: View {
 
 /// Tokens and primitives from wavestudio.pro (`src/index.css` and the Home components).
 enum Theme {
-    static let ink = Color(red: 0x11 / 255, green: 0x11 / 255, blue: 0x11 / 255)
-    static let paper = Color.white
-    static let black = Color.black
+    /// Dark mode is the site's dark sections as a canvas: ink and paper swap, black becomes paper, the
+    /// `#121212` card becomes a light gray. Shadows stay black. Brand colors do not move.
+    static func dynamic(_ light: NSColor, _ dark: NSColor) -> Color {
+        Color(nsColor: NSColor(name: nil) { $0.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light })
+    }
+    private static let inkNS = NSColor(red: 0x11 / 255, green: 0x11 / 255, blue: 0x11 / 255, alpha: 1)
+    static let ink = dynamic(inkNS, .white)
+    static let paper = dynamic(.white, .black)
+    static let black = dynamic(.black, .white)
+    static let shadow = Color.black
     static let brand = Color(red: 0, green: 0xC0 / 255, blue: 0x47 / 255)
     static let violet = Color(red: 0x74 / 255, green: 0x30 / 255, blue: 0xF7 / 255)
     /// Not on the site, which has nothing destructive. Vivid and cool like the green and violet; 4.7:1 on paper.
     static let danger = Color(red: 0xDC / 255, green: 0x2F / 255, blue: 0x3A / 255)
     static let surface = ink.opacity(0.04)     // bg-ink/[0.04]
     static let chip = ink.opacity(0.05)        // bg-ink/[0.05]
-    static let darkCard = Color(red: 0x12 / 255, green: 0x12 / 255, blue: 0x12 / 255)
+    static let darkCard = dynamic(NSColor(white: 0x12 / 255, alpha: 1), NSColor(white: 0xF2 / 255, alpha: 1))
+
+    /// "system", "light" or "dark", from Settings.
+    static func scheme(_ setting: String) -> ColorScheme? {
+        switch setting {
+        case "light": .light
+        case "dark": .dark
+        default: nil
+        }
+    }
     static let radiusButton: CGFloat = 16      // --radius-btn
     static let radiusBlock: CGFloat = 18       // inner blocks of nested cards
     static let radiusCard: CGFloat = 24        // rounded-3xl
@@ -129,7 +145,7 @@ struct PrimaryButton: View {
             .foregroundStyle(onDark ? Theme.ink : Theme.paper)
             .padding(.horizontal, large ? 28 : 20).padding(.vertical, large ? 16 : 10)
             .background(onDark ? Theme.paper : Theme.ink, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
-            .shadow(color: Theme.ink.opacity(onDark ? 0 : 0.25), radius: 6, x: 6, y: 8)
+            .shadow(color: Theme.shadow.opacity(onDark ? 0 : 0.25), radius: 6, x: 6, y: 8)
             .offset(y: hover ? -2 : 0)
         }
         .buttonStyle(PressStyle())
@@ -189,8 +205,34 @@ struct LiveDot: View {
 }
 
 struct Grain: View {
+    var color: Color = Theme.paper
     var body: some View {
-        Image(nsImage: Theme.grain).resizable(resizingMode: .tile).opacity(0.5).allowsHitTesting(false)
+        Image(nsImage: Theme.grain).renderingMode(.template).resizable(resizingMode: .tile)
+            .foregroundStyle(color).opacity(0.5).allowsHitTesting(false)
+    }
+}
+
+/// The page background: paper, and in dark mode the site's black with grain.
+struct CanvasBackground: View {
+    @Environment(\.colorScheme) private var scheme
+    var body: some View {
+        ZStack {
+            Theme.paper
+            if scheme == .dark { Grain(color: Theme.ink) }
+        }
+        .ignoresSafeArea()
+    }
+}
+
+/// Three chips: System, Light, Dark.
+struct ThemePicker: View {
+    @AppStorage("theme") private var theme = "system"
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach([("system", "System"), ("light", "Light"), ("dark", "Dark")], id: \.0) { key, label in
+                Button { theme = key } label: { Chip(text: label, selected: theme == key) }.buttonStyle(PressStyle())
+            }
+        }
     }
 }
 
@@ -235,7 +277,7 @@ extension View {
     func cardFrame(dark: Bool = false) -> some View {
         padding(6)
             .background(dark ? Theme.ink : Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
-            .shadow(color: Theme.ink.opacity(dark ? 0.4 : 0), radius: 16, x: 16, y: 24)
+            .shadow(color: Theme.shadow.opacity(dark ? 0.4 : 0), radius: 16, x: 16, y: 24)
     }
     /// Inner block of a nested card: `rounded-[18px] bg-paper`.
     func cardBlock(_ fill: Color = Theme.paper) -> some View {
