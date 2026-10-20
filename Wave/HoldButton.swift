@@ -22,12 +22,14 @@ struct HoldButton: View {
     private var radius: CGFloat { 14 }
     private var height: CGFloat { compact ? 36 : 44 }
 
+    @State private var size = CGSize.zero
+
     var body: some View {
-        GeometryReader { g in
-            let size = g.size
-            ZStack {
-                Theme.ink
-                labels(color: Theme.paper)
+        labels(color: Theme.paper)
+            .frame(height: height)
+            .frame(minWidth: compact ? 150 : 180)
+            .background(Theme.ink)
+            .overlay {
                 ZStack {
                     Theme.danger
                     labels(color: .white)
@@ -41,10 +43,13 @@ struct HoldButton: View {
                     .opacity(phase == .done ? 1 : 0)
                     .allowsHitTesting(false)
             }
-            .shadow(color: Theme.danger.opacity(0.7 * Double(phase == .idle ? 0 : 1)), radius: 13, y: 10)
+            .shadow(color: Theme.danger.opacity(phase == .idle ? 0 : 0.7), radius: 13, y: 10)
             .scaleEffect(phase == .holding && !reduce ? 0.97 : 1)
             .animation(.timingCurve(0.23, 1, 0.32, 1, duration: 0.16), value: phase)
             .contentShape(Rectangle())
+            .background(GeometryReader { g in
+                Color.clear.onAppear { size = g.size }.onChange(of: g.size) { _, new in size = new }
+            })
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
@@ -56,10 +61,6 @@ struct HoldButton: View {
                     }
                     .onEnded { _ in release() }
             )
-        }
-        .frame(width: nil, height: height)
-        .fixedSize(horizontal: true, vertical: false)
-        .frame(minWidth: compact ? 160 : 188)
     }
 
     private func labels(color: Color) -> some View {
