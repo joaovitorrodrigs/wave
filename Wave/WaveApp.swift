@@ -4,6 +4,8 @@ import SwiftData
 @main struct WaveApp: App {
     init() {
         Theme.registerFont()
+        QuickAdd.install()
+        Morning.start()
         #if DEBUG
         Habit.selfCheck()
         #endif
@@ -30,5 +32,9 @@ import SwiftData
                 }
             }
         }
+
+        MenuBarExtra("Wave", image: "MenuBarIcon") { MenuBarPanel() }
+            .menuBarExtraStyle(.window)
+            .modelContainer(Habit.container)
     }
 }
