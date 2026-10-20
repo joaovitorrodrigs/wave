@@ -332,7 +332,7 @@ struct TaskEditor: View {
     @State private var priority = 0
 
     var body: some View {
-        ScrollView {
+        FitScroll(max: 760) {
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
                     PanelTitle(text: reminder == nil ? "New task" : "Edit task")
@@ -369,8 +369,6 @@ struct TaskEditor: View {
                 PanelButtons(primary: reminder == nil ? "Add task" : "Save", disabled: title.isEmpty, action: save)
             }
         }
-        .scrollIndicators(.never)
-        .frame(maxHeight: 760)
         .panel(width: 480)
         .onAppear(perform: load)
     }

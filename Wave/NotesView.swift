@@ -122,11 +122,12 @@ struct NoteRow: View {
     }
 }
 
-/// Title field and a plain text body, saved on every change.
+/// Title field, format bar and a rich text body, saved on every change.
 struct NoteEditor: View {
     @Bindable var note: Note
     let onDelete: () -> Void
     @FocusState private var titleFocused: Bool
+    @State private var editor = RichEditor()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -134,10 +135,13 @@ struct NoteEditor: View {
                 TextField("Title", text: $note.title).textFieldStyle(.plain).font(.wave(26, .medium)).focused($titleFocused)
                 HoldButton(compact: true, action: onDelete)
             }
-            TextEditor(text: $note.text)
-                .font(.wave(16)).lineSpacing(5)
-                .scrollContentBackground(.hidden).scrollIndicators(.never)
-                .frame(minHeight: 480)
+            FormatBar(editor: editor)
+            RichTextView(editor: editor, noteID: "\(note.persistentModelID)", initialRTF: note.rich, initialText: note.text) { rtf, text in
+                note.rich = rtf
+                note.text = text
+                note.modified = .now
+            }
+            .frame(minHeight: 480)
             Text("Edited \(note.modified, format: .relative(presentation: .named))").font(.wave(13)).foregroundStyle(Theme.ink.opacity(0.4))
         }
         .padding(28)
@@ -145,7 +149,6 @@ struct NoteEditor: View {
         .cardBlock()
         .cardFrame()
         .onChange(of: note.title) { note.modified = .now }
-        .onChange(of: note.text) { note.modified = .now }
         .onAppear { if note.title.isEmpty { titleFocused = true } }
     }
 }

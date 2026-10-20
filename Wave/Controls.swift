@@ -189,6 +189,22 @@ struct TimeStepper: View {
     }
 }
 
+/// Scrolls only when the content is taller than `max`; otherwise it is exactly as tall as its content.
+struct FitScroll<Content: View>: View {
+    let max: CGFloat
+    @ViewBuilder let content: Content
+    @State private var height: CGFloat = 0
+    var body: some View {
+        ScrollView {
+            content.background(GeometryReader { g in
+                Color.clear.onAppear { height = g.size.height }.onChange(of: g.size.height) { _, new in height = new }
+            })
+        }
+        .scrollIndicators(.never)
+        .frame(height: height == 0 ? nil : min(height, max))
+    }
+}
+
 /// Small rotating arc, instead of ProgressView.
 struct Spinner: View {
     var onDark = false

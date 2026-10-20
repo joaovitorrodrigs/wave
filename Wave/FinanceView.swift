@@ -187,7 +187,7 @@ struct SettingsPanel: View {
     @Environment(\.modelContext) private var context
 
     var body: some View {
-        ScrollView {
+        FitScroll(max: 760) {
         VStack(alignment: .leading, spacing: 16) {
             PanelTitle(text: "Settings")
             Text("Appearance").font(.wave(16, .medium)).padding(.top, 8)
@@ -234,8 +234,6 @@ struct SettingsPanel: View {
             Text("Quick add from anywhere: ⌘⇧Space. Siri: “Add a task in Wave”.").font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).padding(.top, 12)
         }
         }
-        .scrollIndicators(.never)
-        .frame(maxHeight: 760)
         .panel(width: 520)
         .onChange(of: key) { Keychain.set(key, account: Finance.keyAccount) }
         .onChange(of: stripe) { Keychain.set(stripe, account: Finance.stripeAccount) }

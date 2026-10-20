@@ -3,7 +3,8 @@ import Foundation
 
 @Model final class Note {
     var title: String
-    var text: String
+    var text: String            // plain, for search, CLI, snippets
+    var rich: Data?             // RTF from the editor; nil when written by the CLI or Siri
     var created = Date.now
     var modified = Date.now
 

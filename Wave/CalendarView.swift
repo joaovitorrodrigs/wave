@@ -127,7 +127,7 @@ struct EventEditor: View {
     @State private var calendar: EKCalendar?
 
     var body: some View {
-        ScrollView {
+        FitScroll(max: 760) {
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
                     PanelTitle(text: event == nil ? "New event" : "Edit event")
@@ -149,8 +149,6 @@ struct EventEditor: View {
                 PanelButtons(primary: event == nil ? "Add event" : "Save", disabled: title.isEmpty, action: save)
             }
         }
-        .scrollIndicators(.never)
-        .frame(maxHeight: 760)
         .panel(width: 480)
         .onAppear(perform: load)
         .onChange(of: start) { if end <= start { end = start.addingTimeInterval(3600) } }
