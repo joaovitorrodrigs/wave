@@ -49,6 +49,12 @@ No exceptions.
 - No work/personal split yet. Reminders lists separate them for now.
 - Gmail: not in v1.
 
+- Home: the dashboard and landing page of the app, modeled on the site's Home: hero with
+  greeting and summary, the three social-proof cards (today's events, money in the dark card,
+  habits as the stats deck with the brand pill), a month calendar with the selected day's
+  events, tasks due in the next 7 days, recent notes. Reads through the same stores; no state
+  of its own beyond the selected month and day.
+
 ## Build order
 
 One module at a time, in daily use before the next starts:

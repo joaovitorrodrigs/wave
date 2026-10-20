@@ -50,7 +50,7 @@ Claude at these commands and it can manage your tasks.
 
 ## Status
 
-Early. Modules land one at a time: tasks, agenda, habits, notes, finances, menu bar.
+Home dashboard, tasks, agenda, habits, notes and finances are in. Menu bar panel is next.
 
 ## License
 

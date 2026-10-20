@@ -33,16 +33,30 @@ enum Selection: Hashable {
         default:
             return
         }
+        items = await reminders(matching: predicate)
+    }
+
+    func reminders(matching predicate: NSPredicate) async -> [EKReminder] {
         let found = await withCheckedContinuation { k in
             ek.fetchReminders(matching: predicate) { k.resume(returning: $0 ?? []) }
         }
-        items = found.sorted { ($0.dueDate ?? .distantFuture) < ($1.dueDate ?? .distantFuture) }
+        return found.sorted { ($0.dueDate ?? .distantFuture) < ($1.dueDate ?? .distantFuture) }
+    }
+
+    /// Incomplete reminders due within the next `days` days, overdue included.
+    func upcoming(days: Int) async -> [EKReminder] {
+        guard authorized else { return [] }
+        let end = Calendar.current.date(byAdding: .day, value: days, to: Calendar.current.startOfDay(for: .now))!
+        return await reminders(matching: ek.predicateForIncompleteReminders(withDueDateStarting: nil, ending: end, calendars: nil))
+    }
+
+    func events(from: Date, to: Date) async -> [EKEvent] {
+        guard (try? await ek.requestFullAccessToEvents()) == true else { return [] }
+        return ek.events(matching: ek.predicateForEvents(withStart: from, end: to, calendars: nil)).sorted { $0.startDate < $1.startDate }
     }
 
     func fetchEvents() async {
-        guard (try? await ek.requestFullAccessToEvents()) == true else { return }
-        let today = ek.predicateForEvents(withStart: Calendar.current.startOfDay(for: .now), end: Calendar.current.endOfToday, calendars: nil)
-        events = ek.events(matching: today).sorted { $0.startDate < $1.startDate }
+        events = await events(from: Calendar.current.startOfDay(for: .now), to: Calendar.current.endOfToday)
     }
 
     func add(_ title: String, to list: EKCalendar?, due: Date? = nil) throws {

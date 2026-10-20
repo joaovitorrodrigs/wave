@@ -2,14 +2,14 @@ import SwiftUI
 import EventKit
 
 enum Page: String, CaseIterable {
-    case today = "Today", habits = "Habits", notes = "Notes", finances = "Finances"
+    case home = "Home", today = "Today", habits = "Habits", notes = "Notes", finances = "Finances"
 }
 
 struct ContentView: View {
     @State private var store = Store()
     @State private var notes = Notes()
     @State private var finance = Finance()
-    @State private var page: Page = .today
+    @State private var page: Page = .home
     @State private var list: EKCalendar?
     @State private var editing: EKReminder?
     @State private var addingTask = false
@@ -22,6 +22,7 @@ struct ContentView: View {
             ScrollView {
                 Group {
                     switch page {
+                    case .home: HomePage(store: store, notes: notes, finance: finance, page: $page, editing: $editing)
                     case .today: TodayPage(store: store, list: $list, editing: $editing)
                     case .habits: HabitsPage(adding: $addingHabit)
                     case .notes: NotesPage(notes: notes)
@@ -52,7 +53,7 @@ struct ContentView: View {
 
     private var buttonTitle: String {
         switch page {
-        case .today: "New task"
+        case .home, .today: "New task"
         case .habits: "New habit"
         case .notes: "New note"
         case .finances: "Refresh"
@@ -63,7 +64,7 @@ struct ContentView: View {
 
     private func primaryAction() {
         switch page {
-        case .today: addingTask = true
+        case .home, .today: addingTask = true
         case .habits: addingHabit = true
         case .notes: addingNote = true
         case .finances: Task { await finance.refresh() }
