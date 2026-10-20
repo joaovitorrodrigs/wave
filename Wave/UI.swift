@@ -78,13 +78,12 @@ struct ModalHost: View {
         ZStack(alignment: .topLeading) {
             if let menu = ui.menu {
                 Color.clear.contentShape(Rectangle()).ignoresSafeArea().onTapGesture { ui.closeMenu() }
-                VStack(spacing: 2) {
+                VStack(spacing: 6) {
                     ForEach(Array(menu.items.enumerated()), id: \.offset) { _, item in
                         if item.1 {
-                            HoldButton(title: "Hold to \(item.0.lowercased())", doneTitle: "Done", compact: true) { ui.closeMenu(); item.2() }
-                                .padding(.top, 4)
+                            HoldButton(title: "Hold to \(item.0.lowercased())", doneTitle: "Done", compact: true, fullWidth: true) { ui.closeMenu(); item.2() }
                         } else {
-                            OptionRow(text: item.0, destructive: false) { ui.closeMenu(); item.2() }
+                            MenuPill(title: item.0, icon: ["Edit", "Rename"].contains(item.0) ? "pencil-simple" : nil) { ui.closeMenu(); item.2() }
                         }
                     }
                 }
@@ -121,6 +120,29 @@ struct ModalHost: View {
         case .newClient: ClientEditor(client: nil)
         case .editClient(let c): ClientEditor(client: c)
         }
+    }
+}
+
+/// Menu action shaped like the hold button next to it: 36pt pill, surface fill, icon and label centered.
+struct MenuPill: View {
+    let title: String
+    var icon: String? = nil
+    let action: () -> Void
+    @State private var hover = false
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                if let icon { Icon(icon, size: 14) }
+                Text(title).font(.wave(13, .medium))
+            }
+            .foregroundStyle(Theme.ink)
+            .frame(maxWidth: .infinity).frame(height: 36)
+            .background(Theme.ink.opacity(hover ? 0.1 : 0.05), in: RoundedRectangle(cornerRadius: 14))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PressStyle())
+        .onHover { hover = $0 }
+        .animation(.easeOut(duration: 0.15), value: hover)
     }
 }
 

@@ -2,13 +2,14 @@ import SwiftUI
 
 /// Port of React Bits' HoldButton in Wave's tokens: ink body, `#DC2F3A` fill that sweeps in with a wavy
 /// crest while you hold (2 s), label crossfades to "Deleted", 0.97 press scale, fill-colored glow, pulse on
-/// completion. Letting go early eases the fill back out; a short tap does nothing. Keyboard hold is not ported.
+/// completion, no glow. Letting go early eases the fill back out; a short tap does nothing. Keyboard hold is not ported.
 struct HoldButton: View {
     var title = "Hold to delete"
     var doneTitle = "Deleted"
     var icon: String? = "trash"
     var holdTime: Double = 2
     var compact = false
+    var fullWidth = false
     let action: () -> Void
 
     private enum Phase { case idle, holding, done }
@@ -28,6 +29,7 @@ struct HoldButton: View {
         labels(color: Theme.paper)
             .frame(height: height)
             .frame(minWidth: compact ? 150 : 180)
+            .frame(maxWidth: fullWidth ? .infinity : nil)
             .background(Theme.ink)
             .overlay {
                 ZStack {
@@ -43,7 +45,6 @@ struct HoldButton: View {
                     .opacity(phase == .done ? 1 : 0)
                     .allowsHitTesting(false)
             }
-            .shadow(color: Theme.danger.opacity(phase == .idle ? 0 : 0.7), radius: 13, y: 10)
             .scaleEffect(phase == .holding && !reduce ? 0.97 : 1)
             .animation(.timingCurve(0.23, 1, 0.32, 1, duration: 0.16), value: phase)
             .contentShape(Rectangle())
