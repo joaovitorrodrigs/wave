@@ -1,8 +1,7 @@
 import SwiftUI
 
 /// Port of skecher-ui's Dock (CoDesign-Spa27/skecher-ui/dock) in Wave's identity: ink surface, violet for the
-/// active page, one paper highlight that springs behind the hovered item, magnification by mouse distance,
-/// jelly-free, label on hover. Same numbers as the original where they fit: base 44, max 72, influence 140,
+/// active page, magnification by mouse distance, label on hover. No hover highlight: motion is the feedback. Same numbers as the original where they fit: base 44, max 72, influence 140,
 /// radius 16, item radius 14, tap scale 0.88.
 struct DockItem: Identifiable {
     let id: String
@@ -57,7 +56,6 @@ struct Dock: View {
             }
         }
         .padding(8)
-        .background { highlight }
         .background(Theme.ink, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
         .shadow(color: Theme.ink.opacity(0.35), radius: 20, y: 14)
         .coordinateSpace(name: "dock")
@@ -78,17 +76,6 @@ struct Dock: View {
         return base + (maxSize - base) * proximity
     }
 
-    /// The one highlight, behind every button, moved by springs. Never mounted or unmounted.
-    private var highlight: some View {
-        let frame = hovered.flatMap { frames[$0] }
-        let size = frame?.width ?? base
-        return RoundedRectangle(cornerRadius: 14).fill(Theme.paper.opacity(0.14))
-            .frame(width: size, height: size)
-            .position(x: frame?.midX ?? -100, y: (frame?.maxY ?? 0) - size / 2)
-            .opacity(frame == nil ? 0 : 1)
-            .animation(reduce ? nil : .spring(duration: 0.3, bounce: 0.2), value: frames)
-            .animation(.easeOut(duration: 0.15), value: hovered)
-    }
 }
 
 struct DockFrames: PreferenceKey {
