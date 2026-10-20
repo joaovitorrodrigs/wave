@@ -212,16 +212,9 @@ struct Grain: View {
     }
 }
 
-/// The page background: paper, and in dark mode the site's black with grain.
+/// The page background: paper in light, flat black in dark. Grain stays on the dark sections only, like the site.
 struct CanvasBackground: View {
-    @Environment(\.colorScheme) private var scheme
-    var body: some View {
-        ZStack {
-            Theme.paper
-            if scheme == .dark { Grain(color: Theme.ink) }
-        }
-        .ignoresSafeArea()
-    }
+    var body: some View { Theme.paper.ignoresSafeArea() }
 }
 
 /// Three chips: System, Light, Dark.
