@@ -78,7 +78,7 @@ struct NoteEditor: View {
         VStack(alignment: .leading, spacing: 16) {
             PanelTitle(text: "New note")
             TextField("Title", text: $title).waveField()
-            TextEditor(text: $text).font(.wave(16)).scrollContentBackground(.hidden)
+            TextEditor(text: $text).font(.wave(16)).scrollContentBackground(.hidden).scrollIndicators(.never)
                 .padding(16).frame(minHeight: 220)
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
             if let error { Text(error).font(.wave(13)).foregroundStyle(Theme.danger) }

@@ -35,7 +35,7 @@ struct ContentView: View {
                     .padding(.horizontal, 40).padding(.top, 32).padding(.bottom, 96)
                     .frame(maxWidth: .infinity)
                 }
-                .scrollIndicators(.hidden)
+                .scrollIndicators(.never)
             }
             ModalHost(store: store, notes: notes, finance: finance)
         }
@@ -385,7 +385,7 @@ struct TaskEditor: View {
                 PanelButtons(primary: reminder == nil ? "Add task" : "Save", disabled: title.isEmpty, action: save)
             }
         }
-        .scrollIndicators(.hidden)
+        .scrollIndicators(.never)
         .frame(maxHeight: 760)
         .panel(width: 480)
         .onAppear(perform: load)

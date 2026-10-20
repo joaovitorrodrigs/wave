@@ -217,7 +217,7 @@ struct SettingsPanel: View {
             Text("Quick add from anywhere: ⌘⇧Space. Siri: “Add a task in Wave”.").font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).padding(.top, 12)
         }
         }
-        .scrollIndicators(.hidden)
+        .scrollIndicators(.never)
         .frame(maxHeight: 760)
         .panel(width: 520)
         .onChange(of: key) { Keychain.set(key, account: Finance.keyAccount) }

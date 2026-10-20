@@ -149,7 +149,7 @@ struct EventEditor: View {
                 PanelButtons(primary: event == nil ? "Add event" : "Save", disabled: title.isEmpty, action: save)
             }
         }
-        .scrollIndicators(.hidden)
+        .scrollIndicators(.never)
         .frame(maxHeight: 760)
         .panel(width: 480)
         .onAppear(perform: load)
