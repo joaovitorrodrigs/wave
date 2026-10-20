@@ -48,7 +48,7 @@ struct Transaction: Codable, Identifiable {
     let amount: String
     let currencyCode: String
     let category: String?
-    var account = ""
+    var account: String?   // filled in after decoding; optional so a missing key does not fail the decode
 
     var value: Decimal { Decimal(string: amount) ?? 0 }
 }

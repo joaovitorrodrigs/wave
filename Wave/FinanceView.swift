@@ -30,7 +30,7 @@ struct FinanceView: View {
                     HStack {
                         VStack(alignment: .leading) {
                             Text(t.description)
-                            Text("\(t.date.formatted(date: .abbreviated, time: .omitted)) · \(t.category ?? "Uncategorized") · \(t.account)")
+                            Text("\(t.date.formatted(date: .abbreviated, time: .omitted)) · \(t.category ?? "Uncategorized") · \(t.account ?? "")")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()
@@ -42,6 +42,9 @@ struct FinanceView: View {
         }
         .navigationTitle("Finances")
         .toolbar {
+            if let error = finance.error, !finance.accounts.isEmpty {
+                Text(error).font(.caption).foregroundStyle(.red).lineLimit(1)
+            }
             if let fetched = finance.fetched {
                 Text("updated \(fetched, format: .relative(presentation: .named))").font(.caption).foregroundStyle(.secondary)
             }
