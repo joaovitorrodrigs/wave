@@ -80,14 +80,19 @@ struct ModalHost: View {
                 Color.clear.contentShape(Rectangle()).ignoresSafeArea().onTapGesture { ui.closeMenu() }
                 VStack(spacing: 2) {
                     ForEach(Array(menu.items.enumerated()), id: \.offset) { _, item in
-                        OptionRow(text: item.0, destructive: item.1) { ui.closeMenu(); item.2() }
+                        if item.1 {
+                            HoldButton(title: "Hold to \(item.0.lowercased())", doneTitle: "Done", compact: true) { ui.closeMenu(); item.2() }
+                                .padding(.top, 4)
+                        } else {
+                            OptionRow(text: item.0, destructive: false) { ui.closeMenu(); item.2() }
+                        }
                     }
                 }
-                .frame(width: 180)
+                .frame(width: 196)
                 .padding(6)
                 .background(Theme.paper, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
                 .shadow(color: Theme.shadow.opacity(0.18), radius: 14, x: 6, y: 10)
-                .offset(x: max(8, menu.anchor.maxX - 192), y: menu.anchor.maxY + 6)
+                .offset(x: max(8, menu.anchor.maxX - 208), y: menu.anchor.maxY + 6)
                 .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .topTrailing)))
             }
             if let modal = ui.modal {

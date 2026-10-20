@@ -338,7 +338,7 @@ struct TaskEditor: View {
                     PanelTitle(text: reminder == nil ? "New task" : "Edit task")
                     Spacer()
                     if let reminder {
-                        SecondaryButton(title: "Delete", danger: true) { try? store.delete(reminder); ui.close() }
+                        HoldButton(compact: true) { try? store.delete(reminder); ui.close() }
                     }
                 }
                 VStack(spacing: 8) {

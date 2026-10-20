@@ -130,9 +130,9 @@ struct NoteEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top) {
+            HStack(alignment: .center) {
                 TextField("Title", text: $note.title).textFieldStyle(.plain).font(.wave(26, .medium)).focused($titleFocused)
-                MenuButton(items: [("Delete", true, onDelete)])
+                HoldButton(compact: true, action: onDelete)
             }
             TextEditor(text: $note.text)
                 .font(.wave(16)).lineSpacing(5)
