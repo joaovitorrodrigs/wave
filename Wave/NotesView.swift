@@ -81,7 +81,7 @@ struct NoteEditor: View {
             TextEditor(text: $text).font(.wave(16)).scrollContentBackground(.hidden)
                 .padding(16).frame(minHeight: 220)
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
-            if let error { Text(error).font(.wave(13)).foregroundStyle(Theme.violet) }
+            if let error { Text(error).font(.wave(13)).foregroundStyle(Theme.danger) }
             PanelButtons(primary: "Save to Notes", disabled: title.isEmpty, action: save)
         }
         .panel(width: 560)

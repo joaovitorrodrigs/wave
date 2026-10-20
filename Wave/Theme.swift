@@ -39,6 +39,8 @@ enum Theme {
     static let black = Color.black
     static let brand = Color(red: 0, green: 0xC0 / 255, blue: 0x47 / 255)
     static let violet = Color(red: 0x74 / 255, green: 0x30 / 255, blue: 0xF7 / 255)
+    /// Not on the site, which has nothing destructive. Vivid and cool like the green and violet; 4.7:1 on paper.
+    static let danger = Color(red: 0xDC / 255, green: 0x2F / 255, blue: 0x3A / 255)
     static let surface = ink.opacity(0.04)     // bg-ink/[0.04]
     static let chip = ink.opacity(0.05)        // bg-ink/[0.05]
     static let darkCard = Color(red: 0x12 / 255, green: 0x12 / 255, blue: 0x12 / 255)
@@ -139,13 +141,15 @@ struct PrimaryButton: View {
 /// `rounded-btn bg-ink/5 px-5 py-3 font-medium`
 struct SecondaryButton: View {
     let title: String
+    var danger = false
     let action: () -> Void
     @State private var hover = false
     var body: some View {
+        let tint = danger ? Theme.danger : Theme.ink
         Button(action: action) {
-            Text(title).font(.wave(16, .medium)).foregroundStyle(Theme.ink)
+            Text(title).font(.wave(16, .medium)).foregroundStyle(tint)
                 .padding(.horizontal, 20).padding(.vertical, 12)
-                .background(Theme.ink.opacity(hover ? 0.1 : 0.05), in: RoundedRectangle(cornerRadius: Theme.radiusButton))
+                .background(tint.opacity(hover ? 0.12 : 0.06), in: RoundedRectangle(cornerRadius: Theme.radiusButton))
         }
         .buttonStyle(PressStyle())
         .onHover { hover = $0 }

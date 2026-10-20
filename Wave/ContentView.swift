@@ -173,7 +173,7 @@ struct TodayPage: View {
                 }
                 .padding(.top, 56).rise(0.15)
                 if let error = gmail.error {
-                    Text(error).font(.wave(14)).foregroundStyle(Theme.violet).padding(.top, 12)
+                    Text(error).font(.wave(14)).foregroundStyle(Theme.danger).padding(.top, 12)
                 }
                 if gmail.messages.isEmpty, !gmail.loading, gmail.error == nil {
                     Text("Inbox zero. Nothing unread.").foregroundStyle(Theme.ink.opacity(0.6)).padding(.top, 16)
@@ -297,7 +297,7 @@ struct TaskRow: View {
             Text(reminder.calendar.title).foregroundStyle(fg.opacity(today ? 0.8 : 0.5))
             if let due {
                 Text(dueText(due, today: today))
-                    .foregroundStyle(overdue ? Theme.violet : fg.opacity(today ? 0.8 : 0.5))
+                    .foregroundStyle(overdue ? Theme.danger : fg.opacity(today ? 0.8 : 0.5))
                     .monospacedDigit().frame(width: 130, alignment: .trailing)
             }
             MenuButton(onDark: today, items: [
@@ -354,7 +354,7 @@ struct TaskEditor: View {
                     PanelTitle(text: reminder == nil ? "New task" : "Edit task")
                     Spacer()
                     if let reminder {
-                        SecondaryButton(title: "Delete") { try? store.delete(reminder); ui.close() }
+                        SecondaryButton(title: "Delete", danger: true) { try? store.delete(reminder); ui.close() }
                     }
                 }
                 VStack(spacing: 8) {

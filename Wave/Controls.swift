@@ -57,7 +57,7 @@ struct OptionRow: View {
                 Spacer()
                 if selected { Icon("check", size: 14) }
             }
-            .foregroundStyle(selected ? Theme.paper : destructive ? Theme.violet : Theme.ink)
+            .foregroundStyle(selected ? Theme.paper : destructive ? Theme.danger : Theme.ink)
             .padding(.horizontal, 16).padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(selected ? Theme.ink : Theme.ink.opacity(hover ? 0.05 : 0), in: RoundedRectangle(cornerRadius: 12))

@@ -142,7 +142,7 @@ struct CategoryRow: View {
             Group {
                 if let delta {
                     Text((delta >= 0 ? "+" : "") + delta.formatted(.percent.precision(.fractionLength(0))))
-                        .foregroundStyle(delta > 0 ? Theme.violet : Theme.brand)
+                        .foregroundStyle(delta > 0 ? Theme.danger : Theme.brand)
                 } else {
                     Text(category.lastMonth == 0 ? "new" : "—").foregroundStyle(Theme.ink.opacity(0.5))
                 }
@@ -213,7 +213,7 @@ struct SettingsPanel: View {
                         .disabled(!gmail.hasClient).opacity(gmail.hasClient ? 1 : 0.4)
                 }
             }
-            if let error = gmail.error { Text(error).font(.wave(13)).foregroundStyle(Theme.violet) }
+            if let error = gmail.error { Text(error).font(.wave(13)).foregroundStyle(Theme.danger) }
             Text("Quick add from anywhere: ⌘⇧Space. Siri: “Add a task in Wave”.").font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).padding(.top, 12)
         }
         }

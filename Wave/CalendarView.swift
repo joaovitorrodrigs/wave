@@ -132,7 +132,7 @@ struct EventEditor: View {
                 HStack {
                     PanelTitle(text: event == nil ? "New event" : "Edit event")
                     Spacer()
-                    if let event { SecondaryButton(title: "Delete") { try? store.delete(event); ui.close() } }
+                    if let event { SecondaryButton(title: "Delete", danger: true) { try? store.delete(event); ui.close() } }
                 }
                 VStack(spacing: 8) {
                     TextField("Title", text: $title).waveField()
