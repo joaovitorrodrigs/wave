@@ -36,13 +36,15 @@ No exceptions.
 - CLI `wave` shares code and store with the app. `task add|list|done`,
   `note add`, one set of commands per module, `--json` output for agents.
 - Menu bar panel: compact "Today" plus today's habits.
-- UI: native macOS structure with the wavestudio.pro identity on top (`Wave/Theme.swift`):
-  ink `#111111` / paper `#ffffff` (paper flips to ink in dark mode), violet `#7430F7` as
-  accent, green `#00C047` as support, Instrument Sans everywhere (variable TTF bundled in
-  `Wave/Fonts/`, SIL OFL), cards radius 24, capsule buttons, custom page header instead of
-  the toolbar title. Tokens come from the wiki page `marca-visual`; the app icon is the
-  official logo (`repos/criativos/brand/logo.svg`) on a rounded macOS tile. Not done: grain
-  texture on dark surfaces, Phosphor icons (SF Symbols `.fill` instead).
+- UI: a port of wavestudio.pro, not a native macOS look. Light only (the site has no dark
+  mode): paper canvas, ink text, violet accent, green support, Instrument Sans (bundled, OFL).
+  Hidden title bar; the site's navbar on top (brand left, page links centered, ink button
+  right). Each page opens with the site's eyebrow + 36px two-tone heading. Vocabulary in
+  `Wave/Theme.swift`: experience rows (`rounded-btn bg-ink/4%`, violet when current),
+  nested cards (`rounded-3xl p-1.5` frame with `rounded-[18px]` paper blocks, ink + violet when
+  highlighted), dark section (`rounded-[40px] bg-black` + grain, `#121212` cards), chips,
+  long shadows, fade-and-rise on appear with the site's easing. Tokens from the wiki page
+  `marca-visual` and `repos/site/src`. Icons are SF Symbols (bold/fill), not Phosphor.
 - Everything in English. Localization only when someone asks.
 - No work/personal split yet. Reminders lists separate them for now.
 - Gmail: not in v1.

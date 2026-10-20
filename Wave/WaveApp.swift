@@ -14,7 +14,8 @@ import SwiftData
             ContentView()
         }
         .modelContainer(Habit.container)
-        .windowToolbarStyle(.unifiedCompact(showsTitle: false))
+        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 1240, height: 860)
         Settings { SettingsView() }
     }
 }

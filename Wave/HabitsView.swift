@@ -1,65 +1,99 @@
 import SwiftUI
 import SwiftData
 
-struct HabitsView: View {
+struct HabitsPage: View {
     @Query(sort: \Habit.created) private var habits: [Habit]
     @Environment(\.modelContext) private var context
+    @Binding var adding: Bool
     @State private var editing: Habit?
-    @State private var adding = false
 
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(habits) { habit in
-                    HabitCard(habit: habit).contextMenu {
-                        Button("Edit") { editing = habit }
-                        Button("Delete", role: .destructive) { context.delete(habit) }
+        VStack(alignment: .leading, spacing: 0) {
+            Eyebrow(text: "Habits").rise()
+            Heading(muted: "Small things, every day.", strong: summary).padding(.top, 20).rise(0.05)
+
+            if habits.isEmpty {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("No habits yet.").font(.wave(20, .medium)).tracking(-0.5)
+                    Text("Pick something small you want to do every day. The grid fills in as you go.")
+                        .foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(4)
+                    PrimaryButton(title: "New habit", icon: "plus", large: true) { adding = true }
+                }
+                .padding(32).frame(maxWidth: 520, alignment: .leading)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
+                .padding(.top, 48).rise(0.1)
+            } else {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12, alignment: .top), count: 3), spacing: 12) {
+                    ForEach(Array(habits.enumerated()), id: \.element.persistentModelID) { i, habit in
+                        HabitCard(habit: habit)
+                            .contextMenu {
+                                Button("Edit") { editing = habit }
+                                Button("Delete", role: .destructive) { context.delete(habit) }
+                            }
+                            .rise(0.1 + Double(i) * 0.1)
                     }
                 }
+                .padding(.top, 56)
             }
-            .padding()
         }
-                .toolbar { Button { adding = true } label: { Image(systemName: "plus") } }
-        .sheet(isPresented: $adding) { HabitEditor(habit: nil) }
         .sheet(item: $editing) { HabitEditor(habit: $0) }
-        .overlay {
-            if habits.isEmpty {
-                ContentUnavailableView("No habits yet", systemImage: "checkmark.square", description: Text("Press + to add one."))
-            }
-        }
+    }
+
+    private var summary: String {
+        let done = habits.filter { $0.isDone(.now) }.count
+        return habits.isEmpty ? "Nothing tracked yet." : "\(done) of \(habits.count) done today."
     }
 }
 
+/// The service card: `rounded-3xl p-1.5` frame with two paper blocks. Done today flips it to ink + violet.
 struct HabitCard: View {
     let habit: Habit
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Image(systemName: habit.icon)
-                    .font(.waveTitle3).foregroundStyle(.white)
-                    .frame(width: 34, height: 34)
-                    .background(habit.tint, in: RoundedRectangle(cornerRadius: 8))
-                VStack(alignment: .leading) {
-                    Text(habit.name).font(.waveHeadline)
-                    Label("\(habit.streak) day streak", systemImage: "flame").font(.waveCaption).foregroundStyle(.secondary)
-                }
-                Spacer()
+        let done = habit.isDone(.now)
+        let fg = done ? Theme.paper : Theme.ink
+        VStack(spacing: 6) {
+            HStack(spacing: 16) {
+                Text(habit.name).font(.wave(20, .medium)).tracking(-0.5).lineLimit(1)
+                Spacer(minLength: 8)
                 Button { habit.toggle(.now) } label: {
-                    Image(systemName: habit.isDone(.now) ? "checkmark.circle.fill" : "circle").font(.title).foregroundStyle(habit.tint)
+                    Image(systemName: habit.icon)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(done ? Theme.violet : habit.tint)
+                        .frame(width: 44, height: 44)
+                        .background(done ? Theme.paper : habit.tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 16))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressStyle())
+                .help(done ? "Done today. Click to undo." : "Mark today as done")
             }
-            HabitGrid(habit: habit)
+            .padding(.horizontal, 24).padding(.vertical, 12)
+            .cardBlock(done ? Theme.violet : Theme.paper)
+
+            VStack(alignment: .leading, spacing: 20) {
+                Text(habit.streak == 0 ? "No streak yet. Today is a good day to start."
+                     : "\(habit.streak) day streak. Keep the row going.")
+                    .foregroundStyle(fg.opacity(done ? 0.8 : 0.6)).lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+                HabitGrid(habit: habit, onDark: done)
+                HStack(spacing: 8) {
+                    Chip(text: done ? "Done today" : "Open", onDark: done)
+                    Chip(text: "\(habit.days.count) days total", onDark: done)
+                }
+            }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .cardBlock(done ? Theme.violet : Theme.paper)
         }
-        .padding(12)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
+        .foregroundStyle(fg)
+        .cardFrame(dark: done)
+        .animation(.easeOut(duration: 0.25), value: done)
     }
 }
 
 struct HabitGrid: View {
     let habit: Habit
-    private let weeks = 26
+    var onDark = false
+    private let weeks = 18
 
     var body: some View {
         let cal = Calendar.current
@@ -71,8 +105,10 @@ struct HabitGrid: View {
                 VStack(spacing: 3) {
                     ForEach(0..<7, id: \.self) { d in
                         let day = cal.date(byAdding: .day, value: w * 7 + d, to: start)!
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(day > today ? Color.clear : habit.isDone(day) ? habit.tint : Color.primary.opacity(0.08))
+                        RoundedRectangle(cornerRadius: 2.5)
+                            .fill(day > today ? Color.clear
+                                  : habit.isDone(day) ? (onDark ? Theme.paper : habit.tint)
+                                  : (onDark ? Theme.paper.opacity(0.18) : Theme.ink.opacity(0.08)))
                             .frame(width: 12, height: 12)
                             .onTapGesture { if day <= today { habit.toggle(day) } }
                     }
@@ -91,31 +127,36 @@ struct HabitEditor: View {
     @State private var color = Habit.palette[0].0
 
     var body: some View {
-        Form {
-            TextField("Name", text: $name)
-            LazyVGrid(columns: Array(repeating: GridItem(.fixed(36)), count: 8)) {
+        VStack(alignment: .leading, spacing: 20) {
+            Text(habit == nil ? "New habit" : "Edit habit").font(.wave(26, .medium)).tracking(-0.6)
+            TextField("Name", text: $name).waveField()
+            LazyVGrid(columns: Array(repeating: GridItem(.fixed(40)), count: 8), spacing: 6) {
                 ForEach(Habit.icons, id: \.self) { i in
-                    Image(systemName: i).frame(width: 32, height: 32)
-                        .background(i == icon ? Color.accentColor.opacity(0.25) : .clear, in: RoundedRectangle(cornerRadius: 6))
+                    Image(systemName: i).font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(i == icon ? Theme.paper : Theme.ink)
+                        .frame(width: 36, height: 36)
+                        .background(i == icon ? Theme.ink : Theme.surface, in: RoundedRectangle(cornerRadius: 12))
                         .onTapGesture { icon = i }
                 }
             }
-            HStack {
+            HStack(spacing: 8) {
                 ForEach(Habit.palette, id: \.0) { key, tint in
-                    Circle().fill(tint).frame(width: 22, height: 22)
-                        .overlay { if key == color { Circle().stroke(.primary, lineWidth: 2) } }
+                    Circle().fill(tint).frame(width: 24, height: 24)
+                        .overlay { if key == color { Circle().stroke(Theme.ink, lineWidth: 2).padding(-3) } }
                         .onTapGesture { color = key }
                 }
             }
             HStack {
-                Button("Cancel", role: .cancel) { dismiss() }
+                SecondaryButton(title: "Cancel") { dismiss() }
                 Spacer()
-                Button("Save", action: save).keyboardShortcut(.defaultAction).disabled(name.isEmpty).buttonStyle(.borderedProminent)
+                PrimaryButton(title: "Save", action: save).disabled(name.isEmpty).keyboardShortcut(.defaultAction)
             }
+            .padding(.top, 4)
         }
-        .buttonBorderShape(.capsule)
-        .formStyle(.grouped)
-        .frame(width: 380)
+        .padding(32)
+        .frame(width: 440)
+        .font(.wave(16))
+        .background(Theme.paper)
         .onAppear { if let habit { name = habit.name; icon = habit.icon; color = habit.color } }
     }
 

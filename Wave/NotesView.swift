@@ -1,33 +1,70 @@
 import SwiftUI
 
-struct NotesView: View {
-    @State private var notes = Notes()
+struct NotesPage: View {
+    let notes: Notes
     @State private var query = ""
-    @State private var adding = false
 
     var body: some View {
-        List(notes.items) { note in
-            VStack(alignment: .leading) {
-                Text(note.title)
-                Text(note.modified, format: .relative(presentation: .named)).font(.waveCaption).foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 0) {
+            Eyebrow(text: "Notes").rise()
+            Heading(muted: "Everything you wrote down.", strong: summary).padding(.top, 20).rise(0.05)
+
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass").font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.ink.opacity(0.5))
+                TextField("Search title and text, press Return", text: $query).textFieldStyle(.plain).font(.wave(14))
+                    .onSubmit { Task { await notes.load(query: query) } }
             }
-            .contentShape(Rectangle())
-            .onTapGesture { notes.open(note) }
-        }
-        .scrollContentBackground(.hidden)
-                .searchable(text: $query, prompt: "Search title and text, press Return")
-        .onSubmit(of: .search) { Task { await notes.load(query: query) } }
-        .onChange(of: query) { if query.isEmpty { Task { await notes.load() } } }
-        .toolbar { Button { adding = true } label: { Image(systemName: "plus") } }
-        .sheet(isPresented: $adding) { NoteEditor(notes: notes) }
-        .task { await notes.load() }
-        .overlay {
+            .padding(.horizontal, 16).padding(.vertical, 10)
+            .frame(maxWidth: 420)
+            .background(Theme.paper.opacity(0.6), in: Capsule())
+            .overlay(Capsule().stroke(Theme.ink.opacity(0.1)))
+            .padding(.top, 36).rise(0.1)
+            .onChange(of: query) { if query.isEmpty { Task { await notes.load() } } }
+
             if let error = notes.error {
-                ContentUnavailableView("Can't reach Notes", systemImage: "exclamationmark.triangle", description: Text(error))
+                Text(error).foregroundStyle(Theme.ink.opacity(0.6)).padding(.top, 48)
             } else if notes.items.isEmpty {
-                ContentUnavailableView(query.isEmpty ? "No notes" : "No results", systemImage: "note.text")
+                Text(query.isEmpty ? "No notes yet." : "Nothing matches.").foregroundStyle(Theme.ink.opacity(0.6)).padding(.top, 48)
+            } else {
+                VStack(spacing: 6) {
+                    ForEach(notes.items) { note in
+                        NoteRow(note: note) { notes.open(note) }
+                    }
+                }
+                .cardFrame()
+                .padding(.top, 48).rise(0.15)
             }
         }
+        .task { await notes.load() }
+    }
+
+    private var summary: String {
+        notes.items.isEmpty ? "Nothing here yet." : "\(notes.items.count) note\(notes.items.count == 1 ? "" : "s")."
+    }
+}
+
+/// The FAQ row: `rounded-[18px] bg-paper px-5 py-4`, with the services card's arrow on hover.
+struct NoteRow: View {
+    let note: Note
+    let open: () -> Void
+    @State private var hover = false
+
+    var body: some View {
+        HStack(spacing: 16) {
+            Text(note.title).font(.wave(20, .medium)).tracking(-0.5).lineLimit(1)
+            Spacer()
+            Text(note.modified, format: .relative(presentation: .named)).foregroundStyle(Theme.ink.opacity(0.5))
+            Image(systemName: hover ? "arrow.up.right" : "plus")
+                .font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.ink.opacity(0.6))
+                .frame(width: 22)
+        }
+        .padding(.horizontal, 20).padding(.vertical, 16)
+        .cardBlock()
+        .overlay(RoundedRectangle(cornerRadius: Theme.radiusBlock).fill(Theme.ink.opacity(hover ? 0.04 : 0)).allowsHitTesting(false))
+        .contentShape(Rectangle())
+        .onTapGesture(perform: open)
+        .onHover { hover = $0 }
+        .animation(.easeOut(duration: 0.2), value: hover)
     }
 }
 
@@ -39,19 +76,24 @@ struct NoteEditor: View {
     @State private var error: String?
 
     var body: some View {
-        VStack(spacing: 12) {
-            TextField("Title", text: $title).font(.waveTitle3)
-            TextEditor(text: $text).font(.waveBody).frame(minHeight: 220)
-            if let error { Text(error).font(.waveCaption).foregroundStyle(.red) }
+        VStack(alignment: .leading, spacing: 16) {
+            Text("New note").font(.wave(26, .medium)).tracking(-0.6)
+            TextField("Title", text: $title).waveField()
+            TextEditor(text: $text).font(.wave(16)).scrollContentBackground(.hidden)
+                .padding(16).frame(minHeight: 220)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
+            if let error { Text(error).font(.wave(13)).foregroundStyle(Theme.violet) }
             HStack {
-                Button("Cancel", role: .cancel) { dismiss() }
+                SecondaryButton(title: "Cancel") { dismiss() }
                 Spacer()
-                Button("Save", action: save).keyboardShortcut(.defaultAction).disabled(title.isEmpty).buttonStyle(.borderedProminent)
+                PrimaryButton(title: "Save to Notes", action: save).disabled(title.isEmpty).keyboardShortcut(.defaultAction)
             }
+            .padding(.top, 8)
         }
-        .buttonBorderShape(.capsule)
-        .padding()
-        .frame(width: 480)
+        .padding(32)
+        .frame(width: 520)
+        .font(.wave(16))
+        .background(Theme.paper)
     }
 
     private func save() {
