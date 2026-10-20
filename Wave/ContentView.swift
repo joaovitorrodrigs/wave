@@ -20,7 +20,24 @@ struct ContentView: View {
                     }
                 }
             }
+            .symbolVariant(.fill)
         } detail: {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(title).font(.waveTitle).tracking(-0.5)
+                    .padding(.horizontal, 20).padding(.top, 14).padding(.bottom, 4)
+                detail
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(Theme.paper)
+        }
+        .font(.waveBody)
+        .task { await store.load(); await refresh() }
+        .onChange(of: selection) { Task { await refresh() } }
+        .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged)) { _ in Task { await refresh() } }
+        .sheet(item: $editing) { ReminderEditor(reminder: $0, store: store) }
+    }
+
+    @ViewBuilder private var detail: some View {
             if selection == .habits {
                 HabitsView()
             } else if selection == .notes {
@@ -52,7 +69,7 @@ struct ContentView: View {
                                 Text(r.title)
                                 if let d = r.dueDate {
                                     Text(d, format: .dateTime.day().month().hour().minute())
-                                        .font(.caption)
+                                        .font(.waveCaption)
                                         .foregroundStyle(d < .now ? .red : .secondary)
                                 }
                             }
@@ -63,17 +80,18 @@ struct ContentView: View {
                     }
                     TextField("New task", text: $newTitle).onSubmit(add)
                 }
-                .navigationTitle(title)
+                .scrollContentBackground(.hidden)
             }
-        }
-        .task { await store.load(); await refresh() }
-        .onChange(of: selection) { Task { await refresh() } }
-        .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged)) { _ in Task { await refresh() } }
-        .sheet(item: $editing) { ReminderEditor(reminder: $0, store: store) }
     }
 
     private var title: String {
-        if case .list(let l) = selection { l.title } else { "Today" }
+        switch selection {
+        case .habits: "Habits"
+        case .notes: "Notes"
+        case .finances: "Finances"
+        case .list(let l): l.title
+        default: "Today"
+        }
     }
 
     private func refresh() async {
@@ -125,9 +143,10 @@ struct ReminderEditor: View {
             HStack {
                 Button("Cancel", role: .cancel) { dismiss() }
                 Spacer()
-                Button("Save", action: save).keyboardShortcut(.defaultAction)
+                Button("Save", action: save).keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
             }
         }
+        .buttonBorderShape(.capsule)
         .formStyle(.grouped)
         .frame(width: 380)
         .onAppear {

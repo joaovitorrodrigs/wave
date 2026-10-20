@@ -54,4 +54,4 @@ Early. Modules land one at a time: tasks, agenda, habits, notes, finances, menu 
 
 ## License
 
-MIT.
+MIT. Instrument Sans is bundled under the SIL Open Font License (`Wave/Fonts/OFL.txt`).

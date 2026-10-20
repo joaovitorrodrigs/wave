@@ -36,7 +36,13 @@ No exceptions.
 - CLI `wave` shares code and store with the app. `task add|list|done`,
   `note add`, one set of commands per module, `--json` output for agents.
 - Menu bar panel: compact "Today" plus today's habits.
-- UI native macOS look in v1. Brand identity applied later.
+- UI: native macOS structure with the wavestudio.pro identity on top (`Wave/Theme.swift`):
+  ink `#111111` / paper `#ffffff` (paper flips to ink in dark mode), violet `#7430F7` as
+  accent, green `#00C047` as support, Instrument Sans everywhere (variable TTF bundled in
+  `Wave/Fonts/`, SIL OFL), cards radius 24, capsule buttons, custom page header instead of
+  the toolbar title. Tokens come from the wiki page `marca-visual`; the app icon is the
+  official logo (`repos/criativos/brand/logo.svg`) on a rounded macOS tile. Not done: grain
+  texture on dark surfaces, Phosphor icons (SF Symbols `.fill` instead).
 - Everything in English. Localization only when someone asks.
 - No work/personal split yet. Reminders lists separate them for now.
 - Gmail: not in v1.

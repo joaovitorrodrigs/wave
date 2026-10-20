@@ -19,8 +19,7 @@ struct HabitsView: View {
             }
             .padding()
         }
-        .navigationTitle("Habits")
-        .toolbar { Button { adding = true } label: { Image(systemName: "plus") } }
+                .toolbar { Button { adding = true } label: { Image(systemName: "plus") } }
         .sheet(isPresented: $adding) { HabitEditor(habit: nil) }
         .sheet(item: $editing) { HabitEditor(habit: $0) }
         .overlay {
@@ -38,12 +37,12 @@ struct HabitCard: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Image(systemName: habit.icon)
-                    .font(.title3).foregroundStyle(.white)
+                    .font(.waveTitle3).foregroundStyle(.white)
                     .frame(width: 34, height: 34)
                     .background(habit.tint, in: RoundedRectangle(cornerRadius: 8))
                 VStack(alignment: .leading) {
-                    Text(habit.name).font(.headline)
-                    Label("\(habit.streak) day streak", systemImage: "flame").font(.caption).foregroundStyle(.secondary)
+                    Text(habit.name).font(.waveHeadline)
+                    Label("\(habit.streak) day streak", systemImage: "flame").font(.waveCaption).foregroundStyle(.secondary)
                 }
                 Spacer()
                 Button { habit.toggle(.now) } label: {
@@ -54,7 +53,7 @@ struct HabitCard: View {
             HabitGrid(habit: habit)
         }
         .padding(12)
-        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
     }
 }
 
@@ -111,9 +110,10 @@ struct HabitEditor: View {
             HStack {
                 Button("Cancel", role: .cancel) { dismiss() }
                 Spacer()
-                Button("Save", action: save).keyboardShortcut(.defaultAction).disabled(name.isEmpty)
+                Button("Save", action: save).keyboardShortcut(.defaultAction).disabled(name.isEmpty).buttonStyle(.borderedProminent)
             }
         }
+        .buttonBorderShape(.capsule)
         .formStyle(.grouped)
         .frame(width: 380)
         .onAppear { if let habit { name = habit.name; icon = habit.icon; color = habit.color } }

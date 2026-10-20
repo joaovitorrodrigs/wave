@@ -9,16 +9,16 @@ struct FinanceView: View {
                 ForEach(finance.accounts) { a in
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(a.title).font(.headline)
+                            Text(a.title).font(.waveHeadline)
                             Text("\(a.subtype.replacingOccurrences(of: "_", with: " ").capitalized) · \(a.number)")
-                                .font(.caption).foregroundStyle(.secondary)
+                                .font(.waveCaption).foregroundStyle(.secondary)
                         }
                         Spacer()
                         VStack(alignment: .trailing) {
-                            Text(a.value, format: .currency(code: a.currencyCode)).font(.title3).monospacedDigit()
+                            Text(a.value, format: .currency(code: a.currencyCode)).font(.waveTitle3).monospacedDigit()
                             if let c = a.creditData {
                                 Text("bill due \(c.balanceDueDate ?? "?") · available \(Decimal(string: c.availableCreditLimit ?? "") ?? 0, format: .currency(code: a.currencyCode))")
-                                    .font(.caption).foregroundStyle(.secondary)
+                                    .font(.waveCaption).foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -31,7 +31,7 @@ struct FinanceView: View {
                         VStack(alignment: .leading) {
                             Text(t.description)
                             Text("\(t.date.formatted(date: .abbreviated, time: .omitted)) · \(t.category ?? "Uncategorized") · \(t.account ?? "")")
-                                .font(.caption).foregroundStyle(.secondary)
+                                .font(.waveCaption).foregroundStyle(.secondary)
                         }
                         Spacer()
                         Text(t.value, format: .currency(code: t.currencyCode)).monospacedDigit()
@@ -40,13 +40,13 @@ struct FinanceView: View {
                 }
             }
         }
-        .navigationTitle("Finances")
+                .scrollContentBackground(.hidden)
         .toolbar {
             if let error = finance.error, !finance.accounts.isEmpty {
-                Text(error).font(.caption).foregroundStyle(.red).lineLimit(1)
+                Text(error).font(.waveCaption).foregroundStyle(.red).lineLimit(1)
             }
             if let fetched = finance.fetched {
-                Text("updated \(fetched, format: .relative(presentation: .named))").font(.caption).foregroundStyle(.secondary)
+                Text("updated \(fetched, format: .relative(presentation: .named))").font(.waveCaption).foregroundStyle(.secondary)
             }
             if finance.loading { ProgressView().controlSize(.small) }
             Button { Task { await finance.refresh() } } label: { Image(systemName: "arrow.clockwise") }.disabled(finance.loading)
@@ -73,7 +73,7 @@ struct SettingsView: View {
         Form {
             SecureField("Banco MCP API key", text: $key, prompt: Text("sk_live_…"))
             Text("Read-only access to your bank accounts through Banco MCP (Open Finance Brasil). Kept in the macOS Keychain.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.waveCaption).foregroundStyle(.secondary)
             Link("Create a key at app.mcp.ai", destination: URL(string: "https://app.mcp.ai/settings/api-keys")!)
         }
         .formStyle(.grouped)

@@ -9,13 +9,13 @@ struct NotesView: View {
         List(notes.items) { note in
             VStack(alignment: .leading) {
                 Text(note.title)
-                Text(note.modified, format: .relative(presentation: .named)).font(.caption).foregroundStyle(.secondary)
+                Text(note.modified, format: .relative(presentation: .named)).font(.waveCaption).foregroundStyle(.secondary)
             }
             .contentShape(Rectangle())
             .onTapGesture { notes.open(note) }
         }
-        .navigationTitle("Notes")
-        .searchable(text: $query, prompt: "Search title and text, press Return")
+        .scrollContentBackground(.hidden)
+                .searchable(text: $query, prompt: "Search title and text, press Return")
         .onSubmit(of: .search) { Task { await notes.load(query: query) } }
         .onChange(of: query) { if query.isEmpty { Task { await notes.load() } } }
         .toolbar { Button { adding = true } label: { Image(systemName: "plus") } }
@@ -40,15 +40,16 @@ struct NoteEditor: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            TextField("Title", text: $title).font(.title3)
-            TextEditor(text: $text).font(.body).frame(minHeight: 220)
-            if let error { Text(error).font(.caption).foregroundStyle(.red) }
+            TextField("Title", text: $title).font(.waveTitle3)
+            TextEditor(text: $text).font(.waveBody).frame(minHeight: 220)
+            if let error { Text(error).font(.waveCaption).foregroundStyle(.red) }
             HStack {
                 Button("Cancel", role: .cancel) { dismiss() }
                 Spacer()
-                Button("Save", action: save).keyboardShortcut(.defaultAction).disabled(title.isEmpty)
+                Button("Save", action: save).keyboardShortcut(.defaultAction).disabled(title.isEmpty).buttonStyle(.borderedProminent)
             }
         }
+        .buttonBorderShape(.capsule)
         .padding()
         .frame(width: 480)
     }
