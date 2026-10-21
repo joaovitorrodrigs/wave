@@ -46,7 +46,7 @@ Settings (⌘,). It lives in your Keychain; the last fetch is cached in
 - **Clients**: everything that carries a client's name, in one place.
 - **Review**: the week in three cards.
 - Habits widget for the desktop (Notification Center > Edit Widgets > Wave), tap to check today.
-- Menu bar panel, ⌘⇧Space quick add from any app, 8:00 morning summary, Siri ("Add a task in Wave"), ⌘K search.
+- Menu bar panel, ⌥Space quick add from any app, 8:00 morning summary, Siri ("Add a task in Wave"), ⌘K search.
 
 Gmail needs your own OAuth client: in Google Cloud enable the Gmail API, create an OAuth client of
 type Desktop app, paste its ID and secret in Settings (⌘,) and connect. Stripe takes a restricted

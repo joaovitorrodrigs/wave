@@ -63,7 +63,7 @@ No exceptions.
   read-write), Habits, Notes (own store), Finances (accounts, Stripe, categories), Clients
   (name-matched tasks/events/notes/payments, SwiftData `Client`), Review (week: done tasks,
   habits, money). Store lives in `Shared/Database.swift` (Habit, Client, Note).
-- System: menu bar panel (`MenuBar.swift`), global quick add ⌘⇧Space via Carbon hot key and a
+- System: menu bar panel (`MenuBar.swift`), global quick add ⌥Space via Carbon hot key and a
   non-activating panel (`QuickAdd.swift`), 8:00 summary notification (`Morning.swift`), App
   Intents for Siri/Shortcuts (`Intents.swift`), ⌘1-8 pages, ⌘N new item, ⌘K palette, ⌘, settings.
 - Gmail: read-only, user-supplied OAuth client (Desktop app), PKCE + loopback listener on
