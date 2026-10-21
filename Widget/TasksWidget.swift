@@ -71,19 +71,27 @@ struct TasksView: View {
         let todos = entry.tasks.todos
         let limit = family == .systemSmall ? 3 : family == .systemMedium ? 5 : 10
         VStack(alignment: .leading, spacing: family == .systemSmall ? 6 : 8) {
-            HStack(alignment: .firstTextBaseline) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("\(todos.count)").font(.custom("Instrument Sans", size: family == .systemSmall ? 28 : 22).weight(.medium)).foregroundStyle(WidgetTheme.violet)
+                Text("to do").font(.custom("Instrument Sans", size: 13).weight(.medium)).foregroundStyle(theme.ink.opacity(0.6))
                 Spacer()
                 if todos.count > limit {
                     Text("+\(todos.count - limit)").font(.custom("Instrument Sans", size: 12)).foregroundStyle(theme.ink.opacity(0.4))
                 }
             }
             if todos.isEmpty {
-                PhIcon("check-circle", size: 22, color: WidgetTheme.violet)
+                HStack(spacing: 8) {
+                    PhIcon("check-circle", size: 18, color: WidgetTheme.violet)
+                    Text("All clear").font(.custom("Instrument Sans", size: 13)).foregroundStyle(theme.ink.opacity(0.6))
+                }
             }
             ForEach(todos.prefix(limit)) { t in TodoWidgetRow(todo: t, theme: theme, compact: family == .systemSmall) }
             if family == .systemLarge, !entry.tasks.reminders.isEmpty {
-                PhIcon("bell", size: 14, color: theme.ink.opacity(0.4)).padding(.top, 6)
+                HStack(spacing: 6) {
+                    PhIcon("bell", size: 14, color: theme.ink.opacity(0.5))
+                    Text("Reminders").font(.custom("Instrument Sans", size: 13).weight(.medium)).foregroundStyle(theme.ink.opacity(0.6))
+                }
+                .padding(.top, 6)
                 ForEach(entry.tasks.reminders.prefix(4)) { r in
                     HStack(spacing: 8) {
                         Text(r.title).font(.custom("Instrument Sans", size: 13)).foregroundStyle(theme.ink).lineLimit(1)
