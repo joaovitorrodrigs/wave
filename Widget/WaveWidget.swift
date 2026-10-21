@@ -21,7 +21,7 @@ import PhosphorSwift
 
 struct HabitsWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "wave.habits", intent: AppearanceIntent.self, provider: HabitsProvider()) { entry in
+        StaticConfiguration(kind: "wave.habits", provider: HabitsProvider()) { entry in
             HabitsView(entry: entry)
                 .containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
@@ -61,14 +61,14 @@ struct HabitsEntry: TimelineEntry {
     var appearance: WidgetAppearance = .auto
 }
 
-struct HabitsProvider: AppIntentTimelineProvider {
+struct HabitsProvider: TimelineProvider {
     func placeholder(in context: Context) -> HabitsEntry { HabitsEntry(date: .now, habits: []) }
-    func snapshot(for configuration: AppearanceIntent, in context: Context) async -> HabitsEntry {
-        HabitsEntry(date: .now, habits: Bridge.load(), appearance: configuration.appearance)
+    func getSnapshot(in context: Context, completion: @escaping (HabitsEntry) -> Void) {
+        completion(HabitsEntry(date: .now, habits: Bridge.load(), appearance: .current))
     }
-    func timeline(for configuration: AppearanceIntent, in context: Context) async -> Timeline<HabitsEntry> {
+    func getTimeline(in context: Context, completion: @escaping (Timeline<HabitsEntry>) -> Void) {
         let midnight = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: .now))!
-        return Timeline(entries: [HabitsEntry(date: .now, habits: Bridge.load(), appearance: configuration.appearance)], policy: .after(midnight))
+        completion(Timeline(entries: [HabitsEntry(date: .now, habits: Bridge.load(), appearance: .current)], policy: .after(midnight)))
     }
 }
 

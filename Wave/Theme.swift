@@ -222,6 +222,18 @@ struct CanvasBackground: View {
     var body: some View { Theme.paper.ignoresSafeArea() }
 }
 
+/// Same three chips for the widgets' background; written to the widget bridge on change.
+struct WidgetThemePicker: View {
+    @AppStorage("widgetTheme") private var theme = "auto"
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach([("auto", "System"), ("light", "White"), ("dark", "Black")], id: \.0) { key, label in
+                Button { theme = key; WidgetBridge.writeAppearance(key) } label: { Chip(text: label, selected: theme == key) }.buttonStyle(PressStyle())
+            }
+        }
+    }
+}
+
 /// Three chips: System, Light, Dark.
 struct ThemePicker: View {
     @AppStorage("theme") private var theme = "system"

@@ -31,6 +31,12 @@ enum WidgetBridge {
 
     static func writeLocation(_ location: LocationSnapshot) { put(location, as: "location.json", kind: "wave.weather") }
 
+    /// Background for every widget: "auto", "light" or "dark".
+    static func writeAppearance(_ value: String) {
+        put(["appearance": value], as: "widget.json", kind: "wave.tasks")
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
     /// Open to-dos and today's reminders for the tasks widget.
     static func writeTasks() async {
         guard ready else { return }
@@ -61,6 +67,7 @@ enum WidgetBridge {
     /// Apply the widget's toggles and checks, then publish habits and tasks.
     static func sync() {
         Task { await writeEvents(); await writeTasks() }
+        writeAppearance(UserDefaults.standard.string(forKey: "widgetTheme") ?? "auto")
         let dir = HabitSnapshot.bridgeDirectory
         let checks = dir.appending(path: "checks.json")
         if let data = try? Data(contentsOf: checks), let list = try? decoder.decode([TodoCheck].self, from: data), !list.isEmpty {

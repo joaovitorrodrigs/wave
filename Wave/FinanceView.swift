@@ -195,6 +195,8 @@ struct SettingsPanel: View {
             PanelTitle(text: "Settings")
             Text("Appearance").font(.wave(16, .medium)).padding(.top, 8)
             ThemePicker()
+            Text("Widgets").font(.wave(16, .medium)).padding(.top, 12)
+            WidgetThemePicker()
             Text("Weather and commute").font(.wave(16, .medium)).padding(.top, 12)
             TextField("City, if location is off (e.g. Belo Horizonte)", text: $weatherCity).waveField()
             TextField("Home address", text: $homeAddress).waveField()

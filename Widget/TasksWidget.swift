@@ -8,14 +8,14 @@ struct TasksEntry: TimelineEntry {
     var appearance: WidgetAppearance = .auto
 }
 
-struct TasksProvider: AppIntentTimelineProvider {
+struct TasksProvider: TimelineProvider {
     func placeholder(in context: Context) -> TasksEntry { TasksEntry(date: .now, tasks: TasksSnapshot(todos: [], reminders: [])) }
-    func snapshot(for configuration: AppearanceIntent, in context: Context) async -> TasksEntry {
-        TasksEntry(date: .now, tasks: TasksBridge.load(), appearance: configuration.appearance)
+    func getSnapshot(in context: Context, completion: @escaping (TasksEntry) -> Void) {
+        completion(TasksEntry(date: .now, tasks: TasksBridge.load(), appearance: .current))
     }
-    func timeline(for configuration: AppearanceIntent, in context: Context) async -> Timeline<TasksEntry> {
+    func getTimeline(in context: Context, completion: @escaping (Timeline<TasksEntry>) -> Void) {
         let midnight = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: .now))!
-        return Timeline(entries: [TasksEntry(date: .now, tasks: TasksBridge.load(), appearance: configuration.appearance)], policy: .after(midnight))
+        completion(Timeline(entries: [TasksEntry(date: .now, tasks: TasksBridge.load(), appearance: .current)], policy: .after(midnight)))
     }
 }
 
@@ -52,7 +52,7 @@ struct CheckTodoIntent: AppIntent {
 
 struct TasksWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "wave.tasks", intent: AppearanceIntent.self, provider: TasksProvider()) { entry in
+        StaticConfiguration(kind: "wave.tasks", provider: TasksProvider()) { entry in
             TasksView(entry: entry).containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
         .configurationDisplayName("Tasks")

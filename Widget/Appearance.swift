@@ -1,20 +1,15 @@
 import WidgetKit
 import SwiftUI
-import AppIntents
 
-/// Every Wave widget takes one option in "Edit Widget": follow the system, or force light or dark.
-enum WidgetAppearance: String, AppEnum {
+/// Background for every Wave widget, chosen once in the app's Settings and handed over as `widget.json`.
+enum WidgetAppearance: String, Codable {
     case auto, light, dark
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Background")
-    static let caseDisplayRepresentations: [WidgetAppearance: DisplayRepresentation] = [
-        .auto: "Follow the system", .light: "White", .dark: "Black",
-    ]
-}
 
-struct AppearanceIntent: WidgetConfigurationIntent {
-    static let title: LocalizedStringResource = "Appearance"
-    static let description = IntentDescription("White or black background.")
-    @Parameter(title: "Background", default: .auto) var appearance: WidgetAppearance
+    static var current: WidgetAppearance {
+        guard let data = try? Data(contentsOf: Bridge.dir.appending(path: "widget.json")),
+              let value = try? JSONDecoder().decode([String: String].self, from: data)["appearance"] else { return .auto }
+        return WidgetAppearance(rawValue: value) ?? .auto
+    }
 }
 
 extension WidgetTheme {

@@ -10,11 +10,11 @@ struct WeatherEntry: TimelineEntry {
     var appearance: WidgetAppearance = .auto
 }
 
-struct WeatherProvider: AppIntentTimelineProvider {
+struct WeatherProvider: TimelineProvider {
     func placeholder(in context: Context) -> WeatherEntry { WeatherEntry(date: .now, forecast: nil, place: "") }
-    func snapshot(for configuration: AppearanceIntent, in context: Context) async -> WeatherEntry { await load(configuration.appearance) }
-    func timeline(for configuration: AppearanceIntent, in context: Context) async -> Timeline<WeatherEntry> {
-        Timeline(entries: [await load(configuration.appearance)], policy: .after(Date.now.addingTimeInterval(1800)))
+    func getSnapshot(in context: Context, completion: @escaping (WeatherEntry) -> Void) { Task { completion(await load(.current)) } }
+    func getTimeline(in context: Context, completion: @escaping (Timeline<WeatherEntry>) -> Void) {
+        Task { completion(Timeline(entries: [await load(.current)], policy: .after(Date.now.addingTimeInterval(1800)))) }
     }
     private func load(_ appearance: WidgetAppearance) async -> WeatherEntry {
         guard let data = try? Data(contentsOf: Bridge.dir.appending(path: "location.json")),
@@ -26,7 +26,7 @@ struct WeatherProvider: AppIntentTimelineProvider {
 
 struct WeatherWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "wave.weather", intent: AppearanceIntent.self, provider: WeatherProvider()) { entry in
+        StaticConfiguration(kind: "wave.weather", provider: WeatherProvider()) { entry in
             WeatherView(entry: entry).containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
         .configurationDisplayName("Weather")
@@ -84,12 +84,12 @@ struct CalendarEntry: TimelineEntry {
     var appearance: WidgetAppearance = .auto
 }
 
-struct CalendarProvider: AppIntentTimelineProvider {
+struct CalendarProvider: TimelineProvider {
     func placeholder(in context: Context) -> CalendarEntry { CalendarEntry(date: .now, events: []) }
-    func snapshot(for configuration: AppearanceIntent, in context: Context) async -> CalendarEntry { load(configuration.appearance) }
-    func timeline(for configuration: AppearanceIntent, in context: Context) async -> Timeline<CalendarEntry> {
+    func getSnapshot(in context: Context, completion: @escaping (CalendarEntry) -> Void) { completion(load(.current)) }
+    func getTimeline(in context: Context, completion: @escaping (Timeline<CalendarEntry>) -> Void) {
         let midnight = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: .now))!
-        return Timeline(entries: [load(configuration.appearance)], policy: .after(midnight))
+        completion(Timeline(entries: [load(.current)], policy: .after(midnight)))
     }
     private func load(_ appearance: WidgetAppearance) -> CalendarEntry {
         let data = try? Data(contentsOf: Bridge.dir.appending(path: "events.json"))
@@ -99,7 +99,7 @@ struct CalendarProvider: AppIntentTimelineProvider {
 
 struct CalendarWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "wave.calendar", intent: AppearanceIntent.self, provider: CalendarProvider()) { entry in
+        StaticConfiguration(kind: "wave.calendar", provider: CalendarProvider()) { entry in
             CalendarView(entry: entry).containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
         .configurationDisplayName("Calendar")
