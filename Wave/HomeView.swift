@@ -14,6 +14,8 @@ struct HomePage: View {
     @State private var monthEvents: [EKEvent] = []
     @State private var month = Date.now
     @State private var selectedDay = Date.now
+    @State private var weather = Weather()
+    @State private var commute = Commute()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -24,6 +26,11 @@ struct HomePage: View {
                 HabitsDeck(habits: habits).rise(0.25)
             }
             .padding(.top, 64)
+            HStack(alignment: .top, spacing: 16) {
+                WeatherCard(weather: weather).rise(0.3)
+                CommuteCard(commute: commute).rise(0.35)
+            }
+            .padding(.top, 16)
 
             HStack(alignment: .firstTextBaseline) {
                 Text("Calendar").font(.wave(36, .medium)).tracking(-0.9)
@@ -68,6 +75,8 @@ struct HomePage: View {
         }
         .task { await load() }
         .task(id: month) { await loadMonth() }
+        .task { while !Task.isCancelled { await weather.refresh(); try? await Task.sleep(for: .seconds(1800)) } }
+        .task { while !Task.isCancelled { await commute.refresh(); try? await Task.sleep(for: .seconds(600)) } }
         .task {
             notes = Note.fetch(context, limit: 4)
             finance.load()
@@ -123,6 +132,94 @@ struct HomePage: View {
         let from = cal.date(byAdding: .day, value: -7, to: first)!
         let to = cal.date(byAdding: .day, value: 49, to: first)!
         monthEvents = await store.events(from: min(from, cal.startOfDay(for: .now)), to: max(to, cal.endOfToday))
+    }
+}
+
+/// Now, high and low, and the next six hours. Open-Meteo, located by the Mac or by the city in Settings.
+struct WeatherCard: View {
+    let weather: Weather
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if let f = weather.forecast {
+                let now = WeatherCodes.describe(f.code, isDay: f.isDay)
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(Int(f.temperature.rounded()))°").font(.wave(40, .medium)).tracking(-1).monospacedDigit()
+                        Text("\(now.label)\(weather.place.isEmpty ? "" : " · " + weather.place)").foregroundStyle(Theme.ink.opacity(0.6))
+                        Text("H \(Int(f.high.rounded()))° · L \(Int(f.low.rounded()))°").font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.5))
+                    }
+                    Spacer()
+                    Icon(now.icon, size: 44, weight: .fill)
+                }
+                HStack(spacing: 0) {
+                    ForEach(f.hours) { h in
+                        VStack(spacing: 6) {
+                            Text(h.time.formatted(.dateTime.hour())).font(.wave(12)).foregroundStyle(Theme.ink.opacity(0.5))
+                            Icon(WeatherCodes.describe(h.code, isDay: true).icon, size: 16, color: Theme.ink.opacity(0.7), weight: .fill)
+                            Text("\(Int(h.temperature.rounded()))°").font(.wave(13, .medium)).monospacedDigit()
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+                .padding(.top, 24)
+            } else {
+                Icon("cloud-sun", size: 34, color: Theme.ink.opacity(0.4), weight: .fill)
+                Text("Weather").font(.wave(24, .medium)).tracking(-0.6).padding(.top, 24)
+                Text(weather.error ?? "Finding where you are…").foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(4).padding(.top, 12)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(32)
+        .frame(maxWidth: .infinity, minHeight: 240, alignment: .topLeading)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
+    }
+}
+
+/// Driving time with traffic between home and work, direction by the hour, tap the arrow to flip.
+struct CommuteCard: View {
+    let commute: Commute
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if !commute.hasAddresses {
+                Icon("car", size: 34, color: Theme.ink.opacity(0.4), weight: .fill)
+                Text("Commute").font(.wave(24, .medium)).tracking(-0.6).padding(.top, 24)
+                Text("Add your home and work addresses in Settings (⌘,).").foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(4).padding(.top, 12)
+            } else {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        if let m = commute.minutes {
+                            Text("\(m) min").font(.wave(40, .medium)).tracking(-1).monospacedDigit()
+                        } else {
+                            Text(commute.error == nil ? "…" : "—").font(.wave(40, .medium)).tracking(-1)
+                        }
+                        Button(action: commute.flip) {
+                            HStack(spacing: 8) {
+                                Text(commute.toWork ? "Home" : "Work").font(.wave(16, .medium))
+                                Icon("arrow-right", size: 14)
+                                Text(commute.toWork ? "Work" : "Home").font(.wave(16, .medium))
+                                Icon("arrows-left-right", size: 12, color: Theme.ink.opacity(0.4))
+                            }
+                        }
+                        .buttonStyle(PressStyle())
+                        if let km = commute.kilometers {
+                            Text("\(km.formatted(.number.precision(.fractionLength(0)))) km\(commute.via.map { " · via \($0)" } ?? "") · by car")
+                                .font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.5))
+                        }
+                        if let error = commute.error { Text(error).font(.wave(13)).foregroundStyle(Theme.danger) }
+                    }
+                    Spacer()
+                    Icon("car", size: 44, weight: .fill)
+                }
+                Spacer(minLength: 16)
+                if let fetched = commute.fetched {
+                    Text("Apple Maps · updated \(fetched, format: .relative(presentation: .named))").font(.wave(13)).foregroundStyle(Theme.ink.opacity(0.4))
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(32)
+        .frame(maxWidth: .infinity, minHeight: 240, alignment: .topLeading)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
     }
 }
 

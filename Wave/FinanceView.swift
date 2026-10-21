@@ -184,6 +184,9 @@ struct SettingsPanel: View {
     @State private var googleSecret = Keychain.get(Gmail.secretAccount) ?? ""
     @State private var gmail = Gmail.shared
     @State private var imported: String?
+    @AppStorage("weatherCity") private var weatherCity = ""
+    @AppStorage("homeAddress") private var homeAddress = ""
+    @AppStorage("workAddress") private var workAddress = ""
     @Environment(\.modelContext) private var context
 
     var body: some View {
@@ -192,6 +195,12 @@ struct SettingsPanel: View {
             PanelTitle(text: "Settings")
             Text("Appearance").font(.wave(16, .medium)).padding(.top, 8)
             ThemePicker()
+            Text("Weather and commute").font(.wave(16, .medium)).padding(.top, 12)
+            TextField("City, if location is off (e.g. Belo Horizonte)", text: $weatherCity).waveField()
+            TextField("Home address", text: $homeAddress).waveField()
+            TextField("Work address", text: $workAddress).waveField()
+            Text("Weather from Open-Meteo. Commute by car from Apple Maps, home → work before noon, work → home after.")
+                .font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6)).lineSpacing(3)
             Text("Notes").font(.wave(16, .medium)).padding(.top, 12)
             HStack(spacing: 12) {
                 SecondaryButton(title: "Import from Apple Notes") {

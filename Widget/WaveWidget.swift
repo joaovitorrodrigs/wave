@@ -11,7 +11,11 @@ import PhosphorSwift
             CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
         }
     }
-    var body: some Widget { HabitsWidget() }
+    var body: some Widget {
+        HabitsWidget()
+        WeatherWidget()
+        CalendarWidget()
+    }
 }
 
 struct HabitsWidget: Widget {

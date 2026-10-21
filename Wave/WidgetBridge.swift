@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 import AppKit
 import WidgetKit
+import EventKit
 
 /// Keeps the widget's snapshot in step with the store, and folds the widget's toggles back in.
 enum WidgetBridge {
@@ -11,11 +12,43 @@ enum WidgetBridge {
         sync()
         NotificationCenter.default.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in sync() }
         NotificationCenter.default.addObserver(forName: ModelContext.didSave, object: nil, queue: .main) { _ in write() }
+        NotificationCenter.default.addObserver(forName: .EKEventStoreChanged, object: nil, queue: .main) { _ in Task { await writeEvents() } }
+        Task { await writeEvents() }
         watch()
+    }
+
+    private static var ready: Bool { FileManager.default.fileExists(atPath: HabitSnapshot.bridgeDirectory.deletingLastPathComponent().path) }
+
+    private static func put<T: Encodable>(_ value: T, as name: String, kind: String) {
+        guard ready else { return }
+        let dir = HabitSnapshot.bridgeDirectory
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        if let data = try? encoder.encode(value) {
+            try? data.write(to: dir.appending(path: name), options: .atomic)
+            WidgetCenter.shared.reloadTimelines(ofKind: kind)
+        }
+    }
+
+    static func writeLocation(_ location: LocationSnapshot) { put(location, as: "location.json", kind: "weather") }
+
+    /// The next 45 days of events for the calendar widget.
+    static func writeEvents() async {
+        guard ready else { return }
+        let store = Store()
+        await store.load()
+        let cal = Calendar.current
+        let events = await store.events(from: cal.startOfDay(for: .now), to: cal.date(byAdding: .day, value: 45, to: .now)!)
+        let snapshot = events.map { e in
+            let c = e.calendar.cgColor.flatMap { NSColor(cgColor: $0) }?.usingColorSpace(.sRGB)
+            let hex = c.map { String(format: "%02X%02X%02X", Int($0.redComponent * 255), Int($0.greenComponent * 255), Int($0.blueComponent * 255)) } ?? "7430F7"
+            return EventSnapshot(title: e.title ?? "", start: e.startDate, end: e.endDate, allDay: e.isAllDay, color: hex)
+        }
+        put(snapshot, as: "events.json", kind: "calendar")
     }
 
     /// Apply the widget's toggles, then publish the current habits.
     static func sync() {
+        Task { await writeEvents() }
         let dir = HabitSnapshot.bridgeDirectory
         let toggles = dir.appending(path: "toggles.json")
         if let data = try? Data(contentsOf: toggles), let list = try? decoder.decode([HabitToggle].self, from: data), !list.isEmpty {
