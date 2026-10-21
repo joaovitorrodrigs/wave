@@ -120,7 +120,7 @@ struct CalendarView: View {
         }
     }
 
-    /// Apple's month widget: red title and today, bold digits, past days dimmed, weekends dimmer, and the
+    /// Apple's month layout in Wave's violet: light digits, past days dimmed, weekends dimmer, and the
     /// neighbouring months' days kept in the grid instead of blanks.
     private func month(_ theme: WidgetTheme) -> some View {
         let cal = Calendar.current
@@ -132,12 +132,11 @@ struct CalendarView: View {
         let gridStart = cal.date(byAdding: .day, value: -offset, to: first)!
         let symbols = cal.veryShortStandaloneWeekdaySymbols
         let weekdays = Array(symbols[(cal.firstWeekday - 1)...] + symbols[..<(cal.firstWeekday - 1)])
-        let red = Color(red: 1, green: 0.27, blue: 0.23)
         return VStack(alignment: .leading, spacing: 6) {
-            Text(today.formatted(.dateTime.month(.wide)).uppercased()).font(.custom("Instrument Sans", size: 10).weight(.bold)).tracking(0.3).foregroundStyle(red)
+            Text(today.formatted(.dateTime.month(.wide)).uppercased()).font(.custom("Instrument Sans", size: 10).weight(.semibold)).tracking(0.3).foregroundStyle(violet)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 5) {
                 ForEach(Array(weekdays.enumerated()), id: \.offset) { i, symbol in
-                    Text(symbol).id("w\(i)").font(.custom("Instrument Sans", size: 9).weight(.bold)).foregroundStyle(theme.ink.opacity(0.45))
+                    Text(symbol).id("w\(i)").font(.custom("Instrument Sans", size: 9).weight(.medium)).foregroundStyle(theme.ink.opacity(0.45))
                 }
                 ForEach((0..<(rows * 7)).map { "d\($0)" }, id: \.self) { key in
                     let i = Int(key.dropFirst())!
@@ -145,10 +144,10 @@ struct CalendarView: View {
                     let inMonth = cal.isDate(day, equalTo: today, toGranularity: .month)
                     let isToday = cal.isDate(day, inSameDayAs: today)
                     let weekend = cal.isDateInWeekend(day)
-                    Text("\(cal.component(.day, from: day))").font(.custom("Instrument Sans", size: 10).weight(.bold))
+                    Text("\(cal.component(.day, from: day))").font(.custom("Instrument Sans", size: 10).weight(isToday ? .medium : .regular))
                         .foregroundStyle(isToday ? Color.white : theme.ink.opacity(!inMonth ? 0.25 : day < today ? 0.45 : weekend ? 0.6 : 1))
                         .frame(width: 18, height: 18)
-                        .background(isToday ? red : .clear, in: Circle())
+                        .background(isToday ? violet : .clear, in: Circle())
                 }
             }
         }
