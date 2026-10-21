@@ -126,26 +126,27 @@ struct CalendarView: View {
         let first = cal.date(from: cal.dateComponents([.year, .month], from: today))!
         let offset = (cal.component(.weekday, from: first) - cal.firstWeekday + 7) % 7
         let count = cal.range(of: .day, in: .month, for: today)!.count
+        let rows = Int(ceil(Double(offset + count) / 7))
+        let gridStart = cal.date(byAdding: .day, value: -offset, to: first)!
         let symbols = cal.veryShortStandaloneWeekdaySymbols
         let weekdays = Array(symbols[(cal.firstWeekday - 1)...] + symbols[..<(cal.firstWeekday - 1)])
         let eventDays = Set(entry.events.map { cal.startOfDay(for: $0.start) })
         return VStack(alignment: .leading, spacing: 4) {
-            Text(today.formatted(.dateTime.month(.wide)).uppercased()).font(.custom("Instrument Sans", size: 11).weight(.semibold)).tracking(0.5).foregroundStyle(violet)
+            Text(today.formatted(.dateTime.month(.wide)).uppercased()).font(.custom("Instrument Sans", size: 11).weight(.semibold)).tracking(0.5).foregroundStyle(theme.ink)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 2) {
-                ForEach(weekdays, id: \.self) { Text($0).font(.custom("Instrument Sans", size: 9).weight(.semibold)).foregroundStyle(theme.ink.opacity(0.4)) }
-                ForEach(0..<(offset + count), id: \.self) { i in
-                    if i < offset {
-                        Color.clear.frame(height: 16)
-                    } else {
-                        let day = cal.date(byAdding: .day, value: i - offset, to: first)!
-                        let isToday = cal.isDate(day, inSameDayAs: today)
-                        VStack(spacing: 1) {
-                            Text("\(i - offset + 1)").font(.custom("Instrument Sans", size: 11).weight(isToday ? .semibold : .medium))
-                                .foregroundStyle(isToday ? Color.white : theme.ink.opacity(day < today ? 0.5 : 1))
-                                .frame(width: 18, height: 16)
-                                .background(isToday ? violet : .clear, in: Circle())
-                            Circle().fill(eventDays.contains(day) ? theme.ink.opacity(0.4) : .clear).frame(width: 3, height: 3)
-                        }
+                ForEach(Array(weekdays.enumerated()), id: \.offset) { _, symbol in
+                    Text(symbol).font(.custom("Instrument Sans", size: 9).weight(.semibold)).foregroundStyle(theme.ink.opacity(0.4))
+                }
+                ForEach(0..<(rows * 7), id: \.self) { i in
+                    let day = cal.date(byAdding: .day, value: i, to: gridStart)!
+                    let inMonth = cal.isDate(day, equalTo: today, toGranularity: .month)
+                    let isToday = cal.isDate(day, inSameDayAs: today)
+                    VStack(spacing: 1) {
+                        Text("\(cal.component(.day, from: day))").font(.custom("Instrument Sans", size: 11).weight(isToday ? .semibold : .medium))
+                            .foregroundStyle(isToday ? Color.white : theme.ink.opacity(!inMonth ? 0.25 : day < today ? 0.5 : 1))
+                            .frame(width: 18, height: 16)
+                            .background(isToday ? violet : .clear, in: Circle())
+                        Circle().fill(eventDays.contains(day) ? theme.ink.opacity(0.4) : .clear).frame(width: 3, height: 3)
                     }
                 }
             }
