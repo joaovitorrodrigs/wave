@@ -133,7 +133,7 @@ struct CalendarView: View {
         let symbols = cal.veryShortStandaloneWeekdaySymbols
         let weekdays = Array(symbols[(cal.firstWeekday - 1)...] + symbols[..<(cal.firstWeekday - 1)])
         return VStack(alignment: .leading, spacing: 6) {
-            Text(today.formatted(.dateTime.month(.wide)).uppercased()).font(.custom("Instrument Sans", size: 10).weight(.semibold)).tracking(0.3).foregroundStyle(violet)
+            Text(today.formatted(.dateTime.month(.wide)).uppercased()).font(.custom("Instrument Sans", size: 10).weight(.semibold)).tracking(0.3).foregroundStyle(theme.ink)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 5) {
                 ForEach(Array(weekdays.enumerated()), id: \.offset) { i, symbol in
                     Text(symbol).id("w\(i)").font(.custom("Instrument Sans", size: 9).weight(.medium)).foregroundStyle(theme.ink.opacity(0.45))
