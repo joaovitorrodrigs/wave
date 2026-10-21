@@ -96,7 +96,7 @@ struct CapturePanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if sent.isEmpty {
-                Text("What needs doing?").font(.wave(20, .medium)).tracking(-0.5).foregroundStyle(Theme.ink.opacity(0.4)).padding(.horizontal, 6)
+                Text("What needs doing?").font(.wave(15)).foregroundStyle(Theme.ink.opacity(0.4)).padding(.horizontal, 6)
             } else {
                 VStack(spacing: 6) {
                     ForEach(Array(sent.enumerated()), id: \.offset) { _, item in
@@ -139,7 +139,7 @@ struct CapturePanel: View {
                     quick("Tomorrow", on: hasDate && Calendar.current.isDateInTomorrow(date)) { setDay(Calendar.current.date(byAdding: .day, value: 1, to: .now)!) }
                     Button { withAnimation(.easeOut(duration: 0.2)) { options.toggle() } } label: {
                         HStack(spacing: 6) {
-                            Icon("sliders-horizontal", size: 13)
+                            Icon("sliders-horizontal", size: 13, color: options ? Theme.paper : Theme.ink)
                             Text(options ? "Less" : "More").font(.wave(14, .medium))
                         }
                         .padding(.horizontal, 12).padding(.vertical, 7)
