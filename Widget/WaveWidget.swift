@@ -21,9 +21,9 @@ import PhosphorSwift
 
 struct HabitsWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "habits", provider: HabitsProvider()) { entry in
+        AppIntentConfiguration(kind: "habits", intent: AppearanceIntent.self, provider: HabitsProvider()) { entry in
             HabitsView(entry: entry)
-                .containerBackground(for: .widget) { WidgetTheme.canvas }
+                .containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
         .configurationDisplayName("Habits")
         .description("Your habits and their grids. Tap an icon to check today.")
@@ -58,14 +58,17 @@ enum Bridge {
 struct HabitsEntry: TimelineEntry {
     let date: Date
     let habits: [HabitSnapshot]
+    var appearance: WidgetAppearance = .auto
 }
 
-struct HabitsProvider: TimelineProvider {
+struct HabitsProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> HabitsEntry { HabitsEntry(date: .now, habits: []) }
-    func getSnapshot(in context: Context, completion: @escaping (HabitsEntry) -> Void) { completion(HabitsEntry(date: .now, habits: Bridge.load())) }
-    func getTimeline(in context: Context, completion: @escaping (Timeline<HabitsEntry>) -> Void) {
+    func snapshot(for configuration: AppearanceIntent, in context: Context) async -> HabitsEntry {
+        HabitsEntry(date: .now, habits: Bridge.load(), appearance: configuration.appearance)
+    }
+    func timeline(for configuration: AppearanceIntent, in context: Context) async -> Timeline<HabitsEntry> {
         let midnight = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: .now))!
-        completion(Timeline(entries: [HabitsEntry(date: .now, habits: Bridge.load())], policy: .after(midnight)))
+        return Timeline(entries: [HabitsEntry(date: .now, habits: Bridge.load(), appearance: configuration.appearance)], policy: .after(midnight))
     }
 }
 
@@ -92,7 +95,7 @@ struct WidgetTheme {
     static let inkLight = Color(red: 0x11 / 255, green: 0x11 / 255, blue: 0x11 / 255)
     static let darkCard = Color(white: 0x12 / 255)
     static let lightCard = Color(white: 0xF2 / 255)
-    static let canvas = Color(nsColor: NSColor(name: nil) { $0.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? .black : .white })
+    static let violet = Color(red: 0x74 / 255, green: 0x30 / 255, blue: 0xF7 / 255)
     static let palette: [String: Color] = ["red": .red, "orange": .orange, "yellow": .yellow, "green": .green, "mint": .mint,
                                            "teal": .teal, "blue": .blue, "indigo": .indigo, "purple": .purple, "pink": .pink]
     let dark: Bool
@@ -108,7 +111,7 @@ struct HabitsView: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        let theme = WidgetTheme(dark: scheme == .dark)
+        let theme = WidgetTheme.resolve(entry.appearance, scheme: scheme)
         let shown: [HabitSnapshot] = Array(entry.habits.prefix(family == .systemSmall ? 1 : family == .systemMedium ? 2 : 4))
         Group {
             if shown.isEmpty {

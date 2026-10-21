@@ -5,14 +5,17 @@ import AppIntents
 struct TasksEntry: TimelineEntry {
     let date: Date
     let tasks: TasksSnapshot
+    var appearance: WidgetAppearance = .auto
 }
 
-struct TasksProvider: TimelineProvider {
+struct TasksProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> TasksEntry { TasksEntry(date: .now, tasks: TasksSnapshot(todos: [], reminders: [])) }
-    func getSnapshot(in context: Context, completion: @escaping (TasksEntry) -> Void) { completion(TasksEntry(date: .now, tasks: TasksBridge.load())) }
-    func getTimeline(in context: Context, completion: @escaping (Timeline<TasksEntry>) -> Void) {
+    func snapshot(for configuration: AppearanceIntent, in context: Context) async -> TasksEntry {
+        TasksEntry(date: .now, tasks: TasksBridge.load(), appearance: configuration.appearance)
+    }
+    func timeline(for configuration: AppearanceIntent, in context: Context) async -> Timeline<TasksEntry> {
         let midnight = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: .now))!
-        completion(Timeline(entries: [TasksEntry(date: .now, tasks: TasksBridge.load())], policy: .after(midnight)))
+        return Timeline(entries: [TasksEntry(date: .now, tasks: TasksBridge.load(), appearance: configuration.appearance)], policy: .after(midnight))
     }
 }
 
@@ -49,8 +52,8 @@ struct CheckTodoIntent: AppIntent {
 
 struct TasksWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "tasks", provider: TasksProvider()) { entry in
-            TasksView(entry: entry).containerBackground(for: .widget) { WidgetTheme.canvas }
+        AppIntentConfiguration(kind: "tasks", intent: AppearanceIntent.self, provider: TasksProvider()) { entry in
+            TasksView(entry: entry).containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
         .configurationDisplayName("Tasks")
         .description("Your to-do list. Tap a circle to check it off.")
@@ -64,42 +67,31 @@ struct TasksView: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        let theme = WidgetTheme(dark: scheme == .dark)
+        let theme = WidgetTheme.resolve(entry.appearance, scheme: scheme)
         let todos = entry.tasks.todos
         let limit = family == .systemSmall ? 3 : family == .systemMedium ? 5 : 10
         VStack(alignment: .leading, spacing: family == .systemSmall ? 6 : 8) {
-            if family == .systemSmall {
-                Text("\(todos.count) to do").font(.custom("Instrument Sans", size: 22).weight(.medium)).foregroundStyle(theme.ink)
-                ForEach(todos.prefix(limit)) { t in
-                    HStack(spacing: 6) {
-                        Circle().strokeBorder(theme.ink.opacity(0.3), lineWidth: 1.2).frame(width: 10, height: 10)
-                        Text(t.title).font(.custom("Instrument Sans", size: 12)).foregroundStyle(theme.ink).lineLimit(1)
-                    }
-                }
-            } else {
-                HStack {
-                    Text("To do").font(.custom("Instrument Sans", size: 13).weight(.medium)).foregroundStyle(theme.ink.opacity(0.6))
-                    Spacer()
-                    Text("\(todos.count)").font(.custom("Instrument Sans", size: 13)).foregroundStyle(theme.ink.opacity(0.4))
-                }
-                if todos.isEmpty {
-                    Text("Nothing to do.").font(.custom("Instrument Sans", size: 13)).foregroundStyle(theme.ink.opacity(0.5))
-                }
-                ForEach(todos.prefix(limit)) { t in TodoWidgetRow(todo: t, theme: theme) }
+            HStack(alignment: .firstTextBaseline) {
+                Text("\(todos.count)").font(.custom("Instrument Sans", size: family == .systemSmall ? 28 : 22).weight(.medium)).foregroundStyle(WidgetTheme.violet)
+                Spacer()
                 if todos.count > limit {
-                    Text("+ \(todos.count - limit) more").font(.custom("Instrument Sans", size: 12)).foregroundStyle(theme.ink.opacity(0.4))
+                    Text("+\(todos.count - limit)").font(.custom("Instrument Sans", size: 12)).foregroundStyle(theme.ink.opacity(0.4))
                 }
-                if family == .systemLarge, !entry.tasks.reminders.isEmpty {
-                    Text("Reminders today").font(.custom("Instrument Sans", size: 13).weight(.medium)).foregroundStyle(theme.ink.opacity(0.6)).padding(.top, 6)
-                    ForEach(entry.tasks.reminders.prefix(4)) { r in
-                        HStack(spacing: 8) {
-                            Text(r.title).font(.custom("Instrument Sans", size: 13)).foregroundStyle(theme.ink).lineLimit(1)
-                            Spacer()
-                            if let d = r.due { Text(d.formatted(date: .omitted, time: .shortened)).font(.custom("Instrument Sans", size: 11)).foregroundStyle(theme.ink.opacity(0.5)) }
-                        }
-                        .padding(.horizontal, 12).padding(.vertical, 6)
-                        .background(theme.surface, in: RoundedRectangle(cornerRadius: 10))
+            }
+            if todos.isEmpty {
+                PhIcon("check-circle", size: 22, color: WidgetTheme.violet)
+            }
+            ForEach(todos.prefix(limit)) { t in TodoWidgetRow(todo: t, theme: theme, compact: family == .systemSmall) }
+            if family == .systemLarge, !entry.tasks.reminders.isEmpty {
+                PhIcon("bell", size: 14, color: theme.ink.opacity(0.4)).padding(.top, 6)
+                ForEach(entry.tasks.reminders.prefix(4)) { r in
+                    HStack(spacing: 8) {
+                        Text(r.title).font(.custom("Instrument Sans", size: 13)).foregroundStyle(theme.ink).lineLimit(1)
+                        Spacer()
+                        if let d = r.due { Text(d.formatted(date: .omitted, time: .shortened)).font(.custom("Instrument Sans", size: 11)).foregroundStyle(theme.ink.opacity(0.5)) }
                     }
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(theme.surface, in: RoundedRectangle(cornerRadius: 10))
                 }
             }
             Spacer(minLength: 0)
@@ -108,26 +100,27 @@ struct TasksView: View {
     }
 }
 
-/// The app's row, shrunk: circle button, title, date on the right.
+/// The app's row, shrunk: violet circle to check, title, date on the right.
 struct TodoWidgetRow: View {
     let todo: TodoSnapshot
     let theme: WidgetTheme
+    var compact = false
     var body: some View {
         let overdue = todo.due.map { $0 < Calendar.current.startOfDay(for: .now) } ?? false
-        HStack(spacing: 10) {
+        HStack(spacing: compact ? 8 : 10) {
             Button(intent: CheckTodoIntent(id: todo.id)) {
-                Circle().strokeBorder(theme.ink.opacity(0.3), lineWidth: 1.5).frame(width: 16, height: 16).contentShape(Circle())
+                Circle().strokeBorder(WidgetTheme.violet, lineWidth: 1.5).frame(width: compact ? 12 : 16, height: compact ? 12 : 16).contentShape(Circle())
             }
             .buttonStyle(.plain)
-            Text(todo.title).font(.custom("Instrument Sans", size: 13).weight(.medium)).foregroundStyle(theme.ink).lineLimit(1)
+            Text(todo.title).font(.custom("Instrument Sans", size: compact ? 12 : 13).weight(.medium)).foregroundStyle(theme.ink).lineLimit(1)
             Spacer()
-            if let due = todo.due {
+            if let due = todo.due, !compact {
                 Text(Calendar.current.isDateInToday(due) ? "Today" : due.formatted(.dateTime.day().month(.abbreviated)))
                     .font(.custom("Instrument Sans", size: 11))
                     .foregroundStyle(overdue ? Color(red: 0xDC / 255, green: 0x2F / 255, blue: 0x3A / 255) : theme.ink.opacity(0.5))
             }
         }
-        .padding(.horizontal, 12).padding(.vertical, 7)
-        .background(theme.surface, in: RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, compact ? 0 : 12).padding(.vertical, compact ? 2 : 7)
+        .background(compact ? Color.clear : theme.surface, in: RoundedRectangle(cornerRadius: 10))
     }
 }

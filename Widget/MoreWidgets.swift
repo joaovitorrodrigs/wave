@@ -7,26 +7,27 @@ struct WeatherEntry: TimelineEntry {
     let date: Date
     let forecast: Forecast?
     let place: String
+    var appearance: WidgetAppearance = .auto
 }
 
-struct WeatherProvider: TimelineProvider {
+struct WeatherProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> WeatherEntry { WeatherEntry(date: .now, forecast: nil, place: "") }
-    func getSnapshot(in context: Context, completion: @escaping (WeatherEntry) -> Void) { Task { completion(await load()) } }
-    func getTimeline(in context: Context, completion: @escaping (Timeline<WeatherEntry>) -> Void) {
-        Task { completion(Timeline(entries: [await load()], policy: .after(Date.now.addingTimeInterval(1800)))) }
+    func snapshot(for configuration: AppearanceIntent, in context: Context) async -> WeatherEntry { await load(configuration.appearance) }
+    func timeline(for configuration: AppearanceIntent, in context: Context) async -> Timeline<WeatherEntry> {
+        Timeline(entries: [await load(configuration.appearance)], policy: .after(Date.now.addingTimeInterval(1800)))
     }
-    private func load() async -> WeatherEntry {
+    private func load(_ appearance: WidgetAppearance) async -> WeatherEntry {
         guard let data = try? Data(contentsOf: Bridge.dir.appending(path: "location.json")),
-              let location = try? Bridge.decoder.decode(LocationSnapshot.self, from: data) else { return WeatherEntry(date: .now, forecast: nil, place: "") }
+              let location = try? Bridge.decoder.decode(LocationSnapshot.self, from: data) else { return WeatherEntry(date: .now, forecast: nil, place: "", appearance: appearance) }
         let forecast = try? await Forecast.fetch(latitude: location.latitude, longitude: location.longitude)
-        return WeatherEntry(date: .now, forecast: forecast, place: location.place)
+        return WeatherEntry(date: .now, forecast: forecast, place: location.place, appearance: appearance)
     }
 }
 
 struct WeatherWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "weather", provider: WeatherProvider()) { entry in
-            WeatherView(entry: entry).containerBackground(for: .widget) { WidgetTheme.canvas }
+        AppIntentConfiguration(kind: "weather", intent: AppearanceIntent.self, provider: WeatherProvider()) { entry in
+            WeatherView(entry: entry).containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
         .configurationDisplayName("Weather")
         .description("Now, high and low, and the next hours.")
@@ -40,7 +41,7 @@ struct WeatherView: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        let theme = WidgetTheme(dark: scheme == .dark)
+        let theme = WidgetTheme.resolve(entry.appearance, scheme: scheme)
         if let f = entry.forecast {
             let now = WeatherCodes.describe(f.code, isDay: f.isDay)
             HStack(alignment: .top, spacing: 16) {
@@ -80,25 +81,26 @@ struct WeatherView: View {
 struct CalendarEntry: TimelineEntry {
     let date: Date
     let events: [EventSnapshot]
+    var appearance: WidgetAppearance = .auto
 }
 
-struct CalendarProvider: TimelineProvider {
+struct CalendarProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> CalendarEntry { CalendarEntry(date: .now, events: []) }
-    func getSnapshot(in context: Context, completion: @escaping (CalendarEntry) -> Void) { completion(load()) }
-    func getTimeline(in context: Context, completion: @escaping (Timeline<CalendarEntry>) -> Void) {
+    func snapshot(for configuration: AppearanceIntent, in context: Context) async -> CalendarEntry { load(configuration.appearance) }
+    func timeline(for configuration: AppearanceIntent, in context: Context) async -> Timeline<CalendarEntry> {
         let midnight = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: .now))!
-        completion(Timeline(entries: [load()], policy: .after(midnight)))
+        return Timeline(entries: [load(configuration.appearance)], policy: .after(midnight))
     }
-    private func load() -> CalendarEntry {
+    private func load(_ appearance: WidgetAppearance) -> CalendarEntry {
         let data = try? Data(contentsOf: Bridge.dir.appending(path: "events.json"))
-        return CalendarEntry(date: .now, events: data.flatMap { try? Bridge.decoder.decode([EventSnapshot].self, from: $0) } ?? [])
+        return CalendarEntry(date: .now, events: data.flatMap { try? Bridge.decoder.decode([EventSnapshot].self, from: $0) } ?? [], appearance: appearance)
     }
 }
 
 struct CalendarWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "calendar", provider: CalendarProvider()) { entry in
-            CalendarView(entry: entry).containerBackground(for: .widget) { WidgetTheme.canvas }
+        AppIntentConfiguration(kind: "calendar", intent: AppearanceIntent.self, provider: CalendarProvider()) { entry in
+            CalendarView(entry: entry).containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
         .configurationDisplayName("Calendar")
         .description("This month, with today's and tomorrow's events.")
@@ -113,7 +115,7 @@ struct CalendarView: View {
     private let violet = Color(red: 0x74 / 255, green: 0x30 / 255, blue: 0xF7 / 255)
 
     var body: some View {
-        let theme = WidgetTheme(dark: scheme == .dark)
+        let theme = WidgetTheme.resolve(entry.appearance, scheme: scheme)
         HStack(spacing: 16) {
             month(theme)
             if family == .systemMedium { agenda(theme) }
