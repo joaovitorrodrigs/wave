@@ -132,12 +132,13 @@ struct CalendarView: View {
         let weekdays = Array(symbols[(cal.firstWeekday - 1)...] + symbols[..<(cal.firstWeekday - 1)])
         let eventDays = Set(entry.events.map { cal.startOfDay(for: $0.start) })
         return VStack(alignment: .leading, spacing: 4) {
-            Text(today.formatted(.dateTime.month(.wide)).uppercased()).font(.custom("Instrument Sans", size: 11).weight(.semibold)).tracking(0.5).foregroundStyle(theme.ink)
+            Text(today.formatted(.dateTime.month(.wide)).uppercased()).font(.custom("Instrument Sans", size: 10).weight(.semibold)).tracking(0.5).foregroundStyle(theme.ink)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 2) {
-                ForEach(Array(weekdays.enumerated()), id: \.offset) { _, symbol in
-                    Text(symbol).font(.custom("Instrument Sans", size: 9).weight(.semibold)).foregroundStyle(theme.ink.opacity(0.4))
+                ForEach(Array(weekdays.enumerated()), id: \.offset) { i, symbol in
+                    Text(symbol).id("w\(i)").font(.custom("Instrument Sans", size: 9).weight(.semibold)).foregroundStyle(theme.ink.opacity(0.4))
                 }
-                ForEach(0..<(rows * 7), id: \.self) { i in
+                ForEach((0..<(rows * 7)).map { "d\($0)" }, id: \.self) { key in
+                    let i = Int(key.dropFirst())!
                     let day = cal.date(byAdding: .day, value: i, to: gridStart)!
                     let inMonth = cal.isDate(day, equalTo: today, toGranularity: .month)
                     let isToday = cal.isDate(day, inSameDayAs: today)
