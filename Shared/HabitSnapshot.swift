@@ -33,3 +33,26 @@ struct HabitToggle: Codable {
     let id: Double
     let day: Date
 }
+
+/// Tasks for the widget: Wave's open to-dos, plus today's reminders for the large size (read-only there).
+struct TasksSnapshot: Codable {
+    var todos: [TodoSnapshot]
+    var reminders: [ReminderSnapshot]
+}
+
+struct TodoSnapshot: Codable, Identifiable {
+    let id: Double          // created
+    var title: String
+    var due: Date?
+}
+
+struct ReminderSnapshot: Codable, Identifiable {
+    var id: String { title + (due.map { "\($0.timeIntervalSince1970)" } ?? "") }
+    let title: String
+    let due: Date?
+}
+
+struct TodoCheck: Codable {
+    let id: Double
+    let at: Date
+}

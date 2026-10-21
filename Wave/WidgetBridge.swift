@@ -11,8 +11,8 @@ enum WidgetBridge {
     static func start() {
         sync()
         NotificationCenter.default.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in sync() }
-        NotificationCenter.default.addObserver(forName: ModelContext.didSave, object: nil, queue: .main) { _ in write() }
-        NotificationCenter.default.addObserver(forName: .EKEventStoreChanged, object: nil, queue: .main) { _ in Task { await writeEvents() } }
+        NotificationCenter.default.addObserver(forName: ModelContext.didSave, object: nil, queue: .main) { _ in write(); Task { await writeTasks() } }
+        NotificationCenter.default.addObserver(forName: .EKEventStoreChanged, object: nil, queue: .main) { _ in Task { await writeEvents(); await writeTasks() } }
         Task { await writeEvents() }
         watch()
     }
@@ -31,6 +31,18 @@ enum WidgetBridge {
 
     static func writeLocation(_ location: LocationSnapshot) { put(location, as: "location.json", kind: "weather") }
 
+    /// Open to-dos and today's reminders for the tasks widget.
+    static func writeTasks() async {
+        guard ready else { return }
+        let context = ModelContext(Database.container)
+        let todos = Todo.open(context).map { TodoSnapshot(id: $0.created.timeIntervalSinceReferenceDate, title: $0.title, due: $0.due) }
+        let store = Store()
+        await store.load()
+        await store.fetch(.today)
+        let reminders = store.items.map { ReminderSnapshot(title: $0.title ?? "", due: $0.dueDate) }
+        put(TasksSnapshot(todos: todos, reminders: reminders), as: "tasks.json", kind: "tasks")
+    }
+
     /// The next 45 days of events for the calendar widget.
     static func writeEvents() async {
         guard ready else { return }
@@ -46,10 +58,20 @@ enum WidgetBridge {
         put(snapshot, as: "events.json", kind: "calendar")
     }
 
-    /// Apply the widget's toggles, then publish the current habits.
+    /// Apply the widget's toggles and checks, then publish habits and tasks.
     static func sync() {
-        Task { await writeEvents() }
+        Task { await writeEvents(); await writeTasks() }
         let dir = HabitSnapshot.bridgeDirectory
+        let checks = dir.appending(path: "checks.json")
+        if let data = try? Data(contentsOf: checks), let list = try? decoder.decode([TodoCheck].self, from: data), !list.isEmpty {
+            let context = ModelContext(Database.container)
+            let todos = Todo.open(context)
+            for c in list {
+                if let todo = todos.first(where: { abs($0.created.timeIntervalSinceReferenceDate - c.id) < 0.001 }) { todo.done = c.at }
+            }
+            try? context.save()
+            try? FileManager.default.removeItem(at: checks)
+        }
         let toggles = dir.appending(path: "toggles.json")
         if let data = try? Data(contentsOf: toggles), let list = try? decoder.decode([HabitToggle].self, from: data), !list.isEmpty {
             let context = ModelContext(Database.container)
@@ -85,7 +107,10 @@ enum WidgetBridge {
         let fd = open(dir.path, O_EVTONLY)
         guard fd >= 0 else { return }
         let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fd, eventMask: .write, queue: .main)
-        source.setEventHandler { if FileManager.default.fileExists(atPath: dir.appending(path: "toggles.json").path) { sync() } }
+        source.setEventHandler {
+            let fm = FileManager.default
+            if fm.fileExists(atPath: dir.appending(path: "toggles.json").path) || fm.fileExists(atPath: dir.appending(path: "checks.json").path) { sync() }
+        }
         source.setCancelHandler { close(fd) }
         source.resume()
         watcher = source

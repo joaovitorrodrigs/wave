@@ -13,6 +13,7 @@ import PhosphorSwift
     }
     var body: some Widget {
         HabitsWidget()
+        TasksWidget()
         WeatherWidget()
         CalendarWidget()
     }
