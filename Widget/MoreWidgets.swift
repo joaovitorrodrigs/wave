@@ -120,6 +120,8 @@ struct CalendarView: View {
         }
     }
 
+    /// Apple's month widget: red title and today, bold digits, past days dimmed, weekends dimmer, and the
+    /// neighbouring months' days kept in the grid instead of blanks.
     private func month(_ theme: WidgetTheme) -> some View {
         let cal = Calendar.current
         let today = cal.startOfDay(for: .now)
@@ -130,25 +132,23 @@ struct CalendarView: View {
         let gridStart = cal.date(byAdding: .day, value: -offset, to: first)!
         let symbols = cal.veryShortStandaloneWeekdaySymbols
         let weekdays = Array(symbols[(cal.firstWeekday - 1)...] + symbols[..<(cal.firstWeekday - 1)])
-        let eventDays = Set(entry.events.map { cal.startOfDay(for: $0.start) })
-        return VStack(alignment: .leading, spacing: 4) {
-            Text(today.formatted(.dateTime.month(.wide)).uppercased()).font(.custom("Instrument Sans", size: 10).weight(.semibold)).tracking(0.5).foregroundStyle(theme.ink)
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 2) {
+        let red = Color(red: 1, green: 0.27, blue: 0.23)
+        return VStack(alignment: .leading, spacing: 6) {
+            Text(today.formatted(.dateTime.month(.wide)).uppercased()).font(.custom("Instrument Sans", size: 10).weight(.bold)).tracking(0.3).foregroundStyle(red)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 5) {
                 ForEach(Array(weekdays.enumerated()), id: \.offset) { i, symbol in
-                    Text(symbol).id("w\(i)").font(.custom("Instrument Sans", size: 9).weight(.semibold)).foregroundStyle(theme.ink.opacity(0.4))
+                    Text(symbol).id("w\(i)").font(.custom("Instrument Sans", size: 9).weight(.bold)).foregroundStyle(theme.ink.opacity(0.45))
                 }
                 ForEach((0..<(rows * 7)).map { "d\($0)" }, id: \.self) { key in
                     let i = Int(key.dropFirst())!
                     let day = cal.date(byAdding: .day, value: i, to: gridStart)!
                     let inMonth = cal.isDate(day, equalTo: today, toGranularity: .month)
                     let isToday = cal.isDate(day, inSameDayAs: today)
-                    VStack(spacing: 1) {
-                        Text("\(cal.component(.day, from: day))").font(.custom("Instrument Sans", size: 11).weight(isToday ? .semibold : .medium))
-                            .foregroundStyle(isToday ? Color.white : theme.ink.opacity(!inMonth ? 0.25 : day < today ? 0.5 : 1))
-                            .frame(width: 18, height: 16)
-                            .background(isToday ? violet : .clear, in: Circle())
-                        Circle().fill(eventDays.contains(day) ? theme.ink.opacity(0.4) : .clear).frame(width: 3, height: 3)
-                    }
+                    let weekend = cal.isDateInWeekend(day)
+                    Text("\(cal.component(.day, from: day))").font(.custom("Instrument Sans", size: 10).weight(.bold))
+                        .foregroundStyle(isToday ? Color.white : theme.ink.opacity(!inMonth ? 0.25 : day < today ? 0.45 : weekend ? 0.6 : 1))
+                        .frame(width: 18, height: 18)
+                        .background(isToday ? red : .clear, in: Circle())
                 }
             }
         }
