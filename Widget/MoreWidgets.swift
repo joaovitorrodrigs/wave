@@ -26,7 +26,7 @@ struct WeatherProvider: AppIntentTimelineProvider {
 
 struct WeatherWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "weather", intent: AppearanceIntent.self, provider: WeatherProvider()) { entry in
+        AppIntentConfiguration(kind: "wave.weather", intent: AppearanceIntent.self, provider: WeatherProvider()) { entry in
             WeatherView(entry: entry).containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
         .configurationDisplayName("Weather")
@@ -99,7 +99,7 @@ struct CalendarProvider: AppIntentTimelineProvider {
 
 struct CalendarWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "calendar", intent: AppearanceIntent.self, provider: CalendarProvider()) { entry in
+        AppIntentConfiguration(kind: "wave.calendar", intent: AppearanceIntent.self, provider: CalendarProvider()) { entry in
             CalendarView(entry: entry).containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
         .configurationDisplayName("Calendar")

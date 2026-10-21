@@ -29,7 +29,7 @@ enum WidgetBridge {
         }
     }
 
-    static func writeLocation(_ location: LocationSnapshot) { put(location, as: "location.json", kind: "weather") }
+    static func writeLocation(_ location: LocationSnapshot) { put(location, as: "location.json", kind: "wave.weather") }
 
     /// Open to-dos and today's reminders for the tasks widget.
     static func writeTasks() async {
@@ -40,7 +40,7 @@ enum WidgetBridge {
         await store.load()
         await store.fetch(.today)
         let reminders = store.items.map { ReminderSnapshot(title: $0.title ?? "", due: $0.dueDate) }
-        put(TasksSnapshot(todos: todos, reminders: reminders), as: "tasks.json", kind: "tasks")
+        put(TasksSnapshot(todos: todos, reminders: reminders), as: "tasks.json", kind: "wave.tasks")
     }
 
     /// The next 45 days of events for the calendar widget.
@@ -55,7 +55,7 @@ enum WidgetBridge {
             let hex = c.map { String(format: "%02X%02X%02X", Int($0.redComponent * 255), Int($0.greenComponent * 255), Int($0.blueComponent * 255)) } ?? "7430F7"
             return EventSnapshot(title: e.title ?? "", start: e.startDate, end: e.endDate, allDay: e.isAllDay, color: hex)
         }
-        put(snapshot, as: "events.json", kind: "calendar")
+        put(snapshot, as: "events.json", kind: "wave.calendar")
     }
 
     /// Apply the widget's toggles and checks, then publish habits and tasks.
@@ -96,7 +96,7 @@ enum WidgetBridge {
         let snapshot = habits.map { HabitSnapshot(id: $0.created.timeIntervalSinceReferenceDate, name: $0.name, icon: $0.icon, color: $0.color, days: $0.days) }
         if let data = try? encoder.encode(snapshot) {
             try? data.write(to: dir.appending(path: "habits.json"), options: .atomic)
-            WidgetCenter.shared.reloadTimelines(ofKind: "habits")
+            WidgetCenter.shared.reloadTimelines(ofKind: "wave.habits")
         }
     }
 

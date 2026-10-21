@@ -45,14 +45,14 @@ struct CheckTodoIntent: AppIntent {
         s.todos.removeAll { $0.id == id }
         TasksBridge.save(s)
         TasksBridge.queue(TodoCheck(id: id, at: .now))
-        WidgetCenter.shared.reloadTimelines(ofKind: "tasks")
+        WidgetCenter.shared.reloadTimelines(ofKind: "wave.tasks")
         return .result()
     }
 }
 
 struct TasksWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "tasks", intent: AppearanceIntent.self, provider: TasksProvider()) { entry in
+        AppIntentConfiguration(kind: "wave.tasks", intent: AppearanceIntent.self, provider: TasksProvider()) { entry in
             TasksView(entry: entry).containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
         .configurationDisplayName("Tasks")

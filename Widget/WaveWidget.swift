@@ -21,7 +21,7 @@ import PhosphorSwift
 
 struct HabitsWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "habits", intent: AppearanceIntent.self, provider: HabitsProvider()) { entry in
+        AppIntentConfiguration(kind: "wave.habits", intent: AppearanceIntent.self, provider: HabitsProvider()) { entry in
             HabitsView(entry: entry)
                 .containerBackground(for: .widget) { WidgetCanvas(appearance: entry.appearance) }
         }
@@ -85,7 +85,7 @@ struct ToggleHabitIntent: AppIntent {
             Bridge.save(habits)
             Bridge.queue(HabitToggle(id: id, day: day))
         }
-        WidgetCenter.shared.reloadTimelines(ofKind: "habits")
+        WidgetCenter.shared.reloadTimelines(ofKind: "wave.habits")
         return .result()
     }
 }

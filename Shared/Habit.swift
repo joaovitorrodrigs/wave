@@ -28,7 +28,7 @@ import WidgetKit
     func toggle(_ date: Date) {
         let day = Calendar.current.startOfDay(for: date)
         if let i = days.firstIndex(of: day) { days.remove(at: i) } else { days.append(day) }
-        WidgetCenter.shared.reloadTimelines(ofKind: "habits")
+        WidgetCenter.shared.reloadTimelines(ofKind: "wave.habits")
     }
 
     /// Consecutive days done, counted back from today, or from yesterday when today is still open.
