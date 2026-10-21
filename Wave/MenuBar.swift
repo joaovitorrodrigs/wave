@@ -79,6 +79,7 @@ enum StatusBar {
 /// Compact Today behind the menu bar glyph: events, tasks to tick, habits to tap.
 struct MenuBarPanel: View {
     @State private var store = Store()
+    @State private var todos: [Todo] = []
     @AppStorage("theme") private var theme = "system"
 
     var body: some View {
@@ -109,6 +110,24 @@ struct MenuBarPanel: View {
             }
 
             section("Tasks") {
+                if todos.isEmpty {
+                    Text("Nothing to do.").foregroundStyle(Theme.ink.opacity(0.5)).padding(.horizontal, 14).padding(.vertical, 10)
+                }
+                ForEach(todos.prefix(6)) { t in
+                    HStack(spacing: 12) {
+                        Button {
+                            t.done = .now
+                            try? t.modelContext?.save()
+                            todos = Todo.open(ModelContext(Database.container))
+                        } label: { Circle().strokeBorder(Theme.ink.opacity(0.3), lineWidth: 1.5).frame(width: 18, height: 18) }.buttonStyle(.plain)
+                        Text(t.title).font(.wave(15, .medium)).lineLimit(1)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 14).padding(.vertical, 10).frame(maxWidth: .infinity, alignment: .leading).cardBlock()
+                }
+            }
+
+            section("Reminders") {
                 if store.items.isEmpty {
                     Text("Nothing due.").foregroundStyle(Theme.ink.opacity(0.5)).padding(.horizontal, 14).padding(.vertical, 10)
                 }
@@ -136,7 +155,7 @@ struct MenuBarPanel: View {
         .font(.wave(15))
         .foregroundStyle(Theme.ink)
         .preferredColorScheme(Theme.scheme(theme))
-        .task { await store.load(); await store.fetch(.today); await store.fetchEvents() }
+        .task { todos = Todo.open(ModelContext(Database.container)); await store.load(); await store.fetch(.today); await store.fetchEvents() }
         .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged)) { _ in
             Task { await store.fetch(.today); await store.fetchEvents() }
         }

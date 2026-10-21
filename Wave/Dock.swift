@@ -98,9 +98,9 @@ extension Page {
     var icon: String {
         switch self {
         case .home: "house"
-        case .today: "sun"
+        case .today: "check-square"
         case .calendar: "calendar-blank"
-        case .habits: "check-square"
+        case .habits: "flame"
         case .notes: "note"
         case .finances: "credit-card"
         case .clients: "users"

@@ -49,13 +49,14 @@ struct MenuState {
 }
 
 enum Modal: Identifiable {
-    case newTask, editTask(EKReminder), newHabit, editHabit(Habit), settings, palette
+    case newTask, editTask(EKReminder), editTodo(Todo), newHabit, editHabit(Habit), settings, palette
     case newEvent(Date), editEvent(EKEvent), newClient, editClient(Client)
 
     var id: String {
         switch self {
         case .newTask: "newTask"
         case .editTask(let r): "task-\(r.calendarItemIdentifier)"
+        case .editTodo(let t): "todo-\(t.persistentModelID)"
         case .newHabit: "newHabit"
         case .editHabit(let h): "habit-\(h.persistentModelID)"
         case .settings: "settings"
@@ -111,6 +112,7 @@ struct ModalHost: View {
         switch modal {
         case .newTask: TaskEditor(store: store, reminder: nil)
         case .editTask(let r): TaskEditor(store: store, reminder: r)
+        case .editTodo(let t): TodoEditor(todo: t)
         case .newHabit: HabitEditor(habit: nil)
         case .editHabit(let h): HabitEditor(habit: h)
         case .settings: SettingsPanel()

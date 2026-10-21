@@ -25,10 +25,13 @@ if getenv("WAVE_DISCLAIMED") == nil, let exe = Bundle.main.executablePath {
 
 func usage() -> Never {
     print("""
-    usage: wave today                   events and tasks for today
-           wave task add <title> [--list <name>] [--due "YYYY-MM-DD[ HH:mm]"]
-           wave task list [<list>]      (default: today)
-           wave task done <id>
+    usage: wave today                       events, tasks and reminders for today
+           wave task add <title> [--due YYYY-MM-DD]
+           wave task list
+           wave task done <title or prefix>
+           wave reminder add <title> [--list <name>] [--due "YYYY-MM-DD[ HH:mm]"]
+           wave reminder list [<list>]        (default: due today)
+           wave reminder done <id>
            wave note add <title> [text]
            wave note list [query]
     Add --json for machine-readable output.
@@ -83,7 +86,7 @@ guard !args.isEmpty else { usage() }
 let listName = option("--list")
 let due = option("--due")
 var command = args.removeFirst()
-if command == "task" || command == "note" {
+if command == "task" || command == "note" || command == "reminder" {
     guard !args.isEmpty else { usage() }
     command += " " + args.removeFirst()
 }
@@ -91,7 +94,7 @@ if command == "task" || command == "note" {
 let store = Store()
 
 func run() async throws {
-    if !command.hasPrefix("note") {
+    if !command.hasPrefix("note"), !command.hasPrefix("task") {
         await store.load()
         guard store.authorized else {
             print("Reminders access denied (status \(EKEventStore.authorizationStatus(for: .reminder).rawValue))\(store.accessError.map { ": " + $0 } ?? "").")
@@ -105,7 +108,10 @@ func run() async throws {
     case "today":
         await store.fetchEvents()
         await store.fetch(.today)
-        if json { printJSON(["events": eventRows(store.events), "tasks": taskRows(store.items)]); return }
+        let todos = Todo.open(ModelContext(Database.container))
+        if json { printJSON(["events": eventRows(store.events), "tasks": todos.map { ["title": $0.title, "due": $0.due.map(iso.string) as Any] }, "reminders": taskRows(store.items)]); return }
+        for t in todos { print("☐ \(t.title)") }
+        if !todos.isEmpty, !store.events.isEmpty { print("") }
         for e in store.events {
             let when = e.isAllDay ? "All day" : "\(e.startDate.formatted(date: .omitted, time: .shortened))–\(e.endDate.formatted(date: .omitted, time: .shortened))"
             print("\(when)  \(e.title ?? "")  [\(e.calendar.title)]")
@@ -114,11 +120,29 @@ func run() async throws {
         emit(store.items)
     case "task add":
         guard let title = args.first else { usage() }
+        let context = ModelContext(Database.container)
+        let todo = Todo(title: title, due: due.flatMap(parseDate))
+        context.insert(todo)
+        try context.save()
+        if json { printJSON(["title": title, "due": todo.due.map(iso.string) as Any]) } else { print("Added: \(title)") }
+    case "task list":
+        let todos = Todo.open(ModelContext(Database.container))
+        if json { printJSON(todos.map { ["title": $0.title, "note": $0.note, "due": $0.due.map(iso.string) as Any] }); return }
+        for t in todos { print("\(t.title)\(t.due.map { "  " + $0.formatted(date: .abbreviated, time: .omitted) } ?? "")") }
+    case "task done":
+        guard let q = args.first else { usage() }
+        let context = ModelContext(Database.container)
+        guard let todo = Todo.open(context).first(where: { $0.title.lowercased().hasPrefix(q.lowercased()) }) else { print("No open task starting with \(q)."); exit(1) }
+        todo.done = .now
+        try context.save()
+        print("Done: \(todo.title)")
+    case "reminder add":
+        guard let title = args.first else { usage() }
         if let due, parseDate(due) == nil { print("Bad --due. Use YYYY-MM-DD or \"YYYY-MM-DD HH:mm\"."); exit(2) }
         try store.add(title, to: list(named: listName), due: due.flatMap(parseDate))
         await store.fetch(.list(list(named: listName) ?? store.ek.defaultCalendarForNewReminders()!))
         emit(store.items.filter { $0.title == title }.suffix(1).map { $0 })
-    case "task list":
+    case "reminder list":
         if let name = args.first {
             guard let l = list(named: name) else { print("No list named \(name)."); exit(1) }
             await store.fetch(.list(l))
@@ -126,8 +150,8 @@ func run() async throws {
             await store.fetch(.today)
         }
         emit(store.items)
-    case "task done":
-        guard let id = args.first, let r = store.reminder(id: id) else { print("No task with that id."); exit(1) }
+    case "reminder done":
+        guard let id = args.first, let r = store.reminder(id: id) else { print("No reminder with that id."); exit(1) }
         r.isCompleted = true
         try store.save(r)
         print("Done: \(r.title ?? "")")

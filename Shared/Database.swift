@@ -6,6 +6,6 @@ enum Database {
     static let container: ModelContainer = {
         let url = URL.applicationSupportDirectory.appending(path: "Wave/wave.store")
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        return try! ModelContainer(for: Habit.self, Client.self, Note.self, configurations: ModelConfiguration(url: url))
+        return try! ModelContainer(for: Habit.self, Client.self, Note.self, Todo.self, configurations: ModelConfiguration(url: url))
     }()
 }

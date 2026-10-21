@@ -17,6 +17,7 @@ struct HomePage: View {
     @State private var selectedDay = Date.now
     @State private var weather = Weather()
     @State private var commute = Commute()
+    @State private var todos: [Todo] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -48,9 +49,10 @@ struct HomePage: View {
             .padding(.top, 40).rise(0.35)
 
             Eyebrow(text: "Tasks").padding(.top, 96).rise(0.4)
-            Heading(muted: "Due in the next 7 days.", strong: upcoming.isEmpty ? "All clear." : "\(upcoming.count) open.")
+            Heading(muted: "To do, and due in the next 7 days.", strong: todos.isEmpty && upcoming.isEmpty ? "All clear." : "\(todos.count) task\(todos.count == 1 ? "" : "s"), \(upcoming.count) reminder\(upcoming.count == 1 ? "" : "s").")
                 .padding(.top, 20).rise(0.45)
             LazyVStack(spacing: 12) {
+                ForEach(todos.prefix(5)) { t in TodoRow(todo: t, reload: { todos = Todo.open(context) }).rise(0.5) }
                 ForEach(Array(upcoming.prefix(6).enumerated()), id: \.element.id) { i, r in
                     TaskRow(reminder: r, store: store, reload: { Task { await load() } }).rise(0.5 + Double(i) * 0.05)
                 }
@@ -84,6 +86,7 @@ struct HomePage: View {
             if finance.hasKey, finance.fetched.map({ Date.now.timeIntervalSince($0) > 3600 }) ?? true { await finance.refresh() }
         }
         .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged)) { _ in Task { await load(); await loadMonth() } }
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) { _ in todos = Todo.open(context) }
     }
 
     private var hero: some View {
@@ -125,7 +128,10 @@ struct HomePage: View {
     private var selectedEvents: [EKEvent] { monthEvents.filter { Calendar.current.isDate($0.startDate, inSameDayAs: selectedDay) } }
     private var eventDays: Set<Date> { Set(monthEvents.map { Calendar.current.startOfDay(for: $0.startDate) }) }
 
-    private func load() async { upcoming = await store.upcoming(days: 7) }
+    private func load() async {
+        upcoming = await store.upcoming(days: 7)
+        todos = Todo.open(context)
+    }
 
     private func loadMonth() async {
         let cal = Calendar.current

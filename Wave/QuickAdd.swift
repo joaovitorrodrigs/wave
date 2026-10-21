@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import SwiftData
 import Carbon.HIToolbox
 
 /// ⌘⇧Space anywhere: a floating field that adds a task to Reminders. Carbon hot keys need no Accessibility permission.
@@ -63,7 +64,7 @@ struct QuickAddView: View {
     var body: some View {
         HStack(spacing: 16) {
             Icon("plus", size: 20, color: Theme.ink.opacity(0.5))
-            TextField("Add a task to Reminders. Return saves, Esc closes.", text: $text)
+            TextField("New task. Start with r: for a reminder. Return saves, Esc closes.", text: $text)
                 .textFieldStyle(.plain).font(.wave(22, .medium)).focused($focused).onSubmit(submit)
             Button("") { close() }.keyboardShortcut(.cancelAction).opacity(0).frame(width: 0, height: 0)
         }
@@ -79,13 +80,22 @@ struct QuickAddView: View {
     }
 
     private func submit() {
-        let title = text.trimmingCharacters(in: .whitespaces)
+        var title = text.trimmingCharacters(in: .whitespaces)
         guard !title.isEmpty else { return }
-        Task {
-            if !store.authorized { await store.load() }
-            try? store.add(title, to: nil)
-            text = ""
-            close()
+        if title.lowercased().hasPrefix("r:") {
+            title = String(title.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+            Task {
+                if !store.authorized { await store.load() }
+                try? store.add(title, to: nil)
+                text = ""
+                close()
+            }
+            return
         }
+        let context = ModelContext(Database.container)
+        context.insert(Todo(title: title))
+        try? context.save()
+        text = ""
+        close()
     }
 }

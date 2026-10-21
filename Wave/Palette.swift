@@ -13,11 +13,12 @@ struct Palette: View {
     @FocusState private var focused: Bool
 
     private enum Hit: Identifiable {
-        case page(Page), task(EKReminder), note(Note), habit(Habit), create(String)
+        case page(Page), task(EKReminder), todo(Todo), note(Note), habit(Habit), create(String)
         var id: String {
             switch self {
             case .page(let p): "page-\(p.rawValue)"
             case .task(let r): "task-\(r.calendarItemIdentifier)"
+            case .todo(let t): "todo-\(t.persistentModelID)"
             case .note(let n): "note-\(n.persistentModelID)"
             case .habit(let h): "habit-\(h.persistentModelID)"
             case .create: "create"
@@ -55,7 +56,8 @@ struct Palette: View {
         let q = query.trimmingCharacters(in: .whitespaces)
         guard !q.isEmpty else { return Page.allCases.map { .page($0) } }
         var out: [Hit] = Page.allCases.filter { $0.rawValue.localizedCaseInsensitiveContains(q) }.map { .page($0) }
-        out += tasks.filter { ($0.title ?? "").localizedCaseInsensitiveContains(q) }.prefix(5).map { .task($0) }
+        out += Todo.open(context).filter { $0.title.localizedCaseInsensitiveContains(q) }.prefix(4).map { .todo($0) }
+        out += tasks.filter { ($0.title ?? "").localizedCaseInsensitiveContains(q) }.prefix(4).map { .task($0) }
         out += Note.fetch(context, query: q, limit: 4).map { .note($0) }
         out += habits.filter { $0.name.localizedCaseInsensitiveContains(q) }.prefix(3).map { .habit($0) }
         out.append(.create(q))
@@ -65,10 +67,11 @@ struct Palette: View {
     private func label(_ hit: Hit) -> String {
         switch hit {
         case .page(let p): p.rawValue
-        case .task(let r): "Task · \(r.title ?? "")"
+        case .task(let r): "Reminder · \(r.title ?? "")"
+        case .todo(let t): "Task · \(t.title)"
         case .note(let n): "Note · \(n.title)"
         case .habit(let h): "Habit · \(h.name)\(h.isDone(.now) ? " (done today, click to undo)" : " (mark today)")"
-        case .create(let q): "Create task “\(q)”"
+        case .create(let q): q.lowercased().hasPrefix("r:") ? "Create reminder “\(q.dropFirst(2).trimmingCharacters(in: .whitespaces))”" : "Create task “\(q)”"
         }
     }
 
@@ -76,9 +79,13 @@ struct Palette: View {
         switch hit {
         case .page(let p): ui.page = p; ui.close()
         case .task(let r): ui.modal = .editTask(r)
+        case .todo(let t): ui.modal = .editTodo(t)
         case .note(let n): ui.openNote(n); ui.close()
         case .habit(let h): h.toggle(.now); ui.close()
-        case .create(let q): try? store.add(q, to: nil); ui.close()
+        case .create(let q):
+            if q.lowercased().hasPrefix("r:") { try? store.add(String(q.dropFirst(2)).trimmingCharacters(in: .whitespaces), to: nil) }
+            else { context.insert(Todo(title: q)) }
+            ui.close()
         }
     }
 }
