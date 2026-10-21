@@ -10,6 +10,7 @@ enum StatusBar {
     private static var panel: NSPanel?
     private static var monitor: Any?
     private static var resizeObserver: Any?
+    private static var hiddenAt = Date.distantPast
 
     static func install() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -21,7 +22,10 @@ enum StatusBar {
     }
 
     static func toggle() {
-        if let panel, panel.isVisible { hide() } else { show() }
+        if let panel, panel.isVisible { hide(); return }
+        // The outside-click monitor may have just closed it for this same click on the glyph: stay closed.
+        if Date.now.timeIntervalSince(hiddenAt) < 0.3 { return }
+        show()
     }
 
     static func show() {
@@ -42,7 +46,11 @@ enum StatusBar {
         place()
         p.makeKeyAndOrderFront(nil)
         resizeObserver = NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification, object: p, queue: .main) { _ in place() }
-        monitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { _ in hide() }
+        monitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { event in
+            if let button = item?.button, let window = button.window,
+               window.convertToScreen(button.convert(button.bounds, to: nil)).contains(NSEvent.mouseLocation) { return }
+            hide()
+        }
     }
 
     /// Centered under the glyph, top edge just below the menu bar, however tall the content gets.
@@ -53,6 +61,7 @@ enum StatusBar {
     }
 
     static func hide() {
+        if panel?.isVisible == true { hiddenAt = .now }
         panel?.orderOut(nil)
         panel = nil
         if let monitor { NSEvent.removeMonitor(monitor) }
@@ -123,7 +132,25 @@ struct MenuBarPanel: View {
 
             if !habits.isEmpty {
                 Text("Habits").font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6))
-                FlowChips(habits: habits)
+                VStack(spacing: 8) {
+                    ForEach(habits) { habit in
+                        HStack(spacing: 12) {
+                            Button { habit.toggle(.now) } label: {
+                                HStack(spacing: 6) {
+                                    Icon(habit.isDone(.now) ? "check" : habit.icon, size: 14,
+                                         color: habit.isDone(.now) ? Theme.paper : Theme.ink.opacity(0.7), weight: habit.isDone(.now) ? .bold : .fill)
+                                    Text(habit.name).lineLimit(1)
+                                }
+                                .font(.wave(13)).padding(.horizontal, 12).padding(.vertical, 7)
+                                .foregroundStyle(habit.isDone(.now) ? Theme.paper : Theme.ink.opacity(0.7))
+                                .background(habit.isDone(.now) ? Theme.ink : Theme.chip, in: RoundedRectangle(cornerRadius: 12))
+                            }
+                            .buttonStyle(PressStyle())
+                            Spacer(minLength: 8)
+                            HabitMiniGrid(habit: habit)
+                        }
+                    }
+                }
             }
         }
         .padding(20)
@@ -146,22 +173,29 @@ struct MenuBarPanel: View {
     }
 }
 
-struct FlowChips: View {
-    let habits: [Habit]
+/// Ten weeks of a habit in one Canvas draw call: no per-cell views, cheap enough for the popover.
+struct HabitMiniGrid: View {
+    let habit: Habit
+    var weeks = 10
+
     var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 6, alignment: .leading)], alignment: .leading, spacing: 6) {
-            ForEach(habits) { habit in
-                Button { habit.toggle(.now) } label: {
-                    HStack(spacing: 6) {
-                        Icon(habit.isDone(.now) ? "check" : habit.icon, size: 14, color: habit.isDone(.now) ? Theme.paper : Theme.ink.opacity(0.7), weight: habit.isDone(.now) ? .bold : .fill)
-                        Text(habit.name).lineLimit(1)
-                    }
-                    .font(.wave(13)).padding(.horizontal, 12).padding(.vertical, 7)
-                    .foregroundStyle(habit.isDone(.now) ? Theme.paper : Theme.ink.opacity(0.7))
-                    .background(habit.isDone(.now) ? Theme.ink : Theme.chip, in: RoundedRectangle(cornerRadius: 12))
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: .now)
+        let weekEnd = cal.date(byAdding: .day, value: 7 - cal.component(.weekday, from: today), to: today)!
+        let start = cal.date(byAdding: .day, value: 1 - weeks * 7, to: weekEnd)!
+        let done = Set(habit.days.map { cal.startOfDay(for: $0) })
+        let tint = habit.tint
+        let empty = Theme.ink.opacity(0.1)
+        Canvas { context, _ in
+            for w in 0..<weeks {
+                for d in 0..<7 {
+                    let day = cal.date(byAdding: .day, value: w * 7 + d, to: start)!
+                    if day > today { continue }
+                    let rect = CGRect(x: CGFloat(w) * 10, y: CGFloat(d) * 10, width: 8, height: 8)
+                    context.fill(Path(roundedRect: rect, cornerRadius: 2), with: .color(done.contains(day) ? tint : empty))
                 }
-                .buttonStyle(PressStyle())
             }
         }
+        .frame(width: CGFloat(weeks) * 10 - 2, height: 68)
     }
 }
