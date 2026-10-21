@@ -7,16 +7,30 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		000000000000000000000320 /* WaveWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WaveWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000220 /* wave */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = wave; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000120 /* Wave.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wave.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXBuildFile section */
+		000000000000000000000321 /* WaveWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 000000000000000000000320 /* WaveWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		000000000000000000000322 /* PhosphorSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000330 /* PhosphorSwift */; };
 		000000000000000420000000 /* PhosphorSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000410000000 /* PhosphorSwift */; };
 		000000000000000000000221 /* wave in Embed CLI */ = {isa = PBXBuildFile; fileRef = 000000000000000000000220 /* wave */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		000000000000000160000000 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				000000000000000000000321 /* WaveWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		000000000000000150000000 /* Embed CLI */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -31,6 +45,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		000000000000000600000000 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000500000000 /* WaveWidget */;
+		};
 		000000000000000300000000 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 000000000000000200000000 /* wave */;
@@ -38,6 +56,11 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		000000000000000000000013 /* Widget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Widget;
+			sourceTree = "<group>";
+		};
 		000000000000000000000011 /* CLI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = CLI;
@@ -56,6 +79,12 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		000000000000000530000000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				000000000000000000000322 /* PhosphorSwift in Frameworks */,
+			);
+		};
 		000000000000000230000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
@@ -76,6 +105,7 @@
 				000000000000000000000010 /* Wave */,
 				000000000000000000000011 /* CLI */,
 				000000000000000000000012 /* Shared */,
+				000000000000000000000013 /* Widget */,
 				000000000000000000000020 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -85,6 +115,7 @@
 			children = (
 				000000000000000000000120 /* Wave.app */,
 				000000000000000000000220 /* wave */,
+				000000000000000000000320 /* WaveWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -92,6 +123,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		000000000000000500000000 /* WaveWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000510000000 /* Build configuration list for PBXNativeTarget "WaveWidget" */;
+			buildPhases = (
+				000000000000000520000000 /* Sources */,
+				000000000000000530000000 /* Frameworks */,
+				000000000000000540000000 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				000000000000000000000013 /* Widget */,
+			);
+			name = WaveWidget;
+			packageProductDependencies = (
+				000000000000000000000330 /* PhosphorSwift */,
+			);
+			productName = WaveWidget;
+			productReference = 000000000000000000000320 /* WaveWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		000000000000000200000000 /* wave */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 000000000000000210000000 /* Build configuration list for PBXNativeTarget "WaveCLI" */;
@@ -120,11 +174,13 @@
 				000000000000000130000000 /* Frameworks */,
 				000000000000000140000000 /* Resources */,
 				000000000000000150000000 /* Embed CLI */,
+				000000000000000160000000 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				000000000000000300000000 /* PBXTargetDependency */,
+				000000000000000600000000 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				000000000000000000000010 /* Wave */,
@@ -172,11 +228,17 @@
 			targets = (
 				000000000000000100000000 /* Wave */,
 				000000000000000200000000 /* wave */,
+				000000000000000500000000 /* WaveWidget */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		000000000000000540000000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
 		000000000000000140000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
@@ -185,6 +247,11 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		000000000000000520000000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 		000000000000000220000000 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
@@ -198,6 +265,56 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		000000000000000511000000 /* Debug configuration for PBXNativeTarget "WaveWidget" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/WaveWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/WaveWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Wave;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = pro.wavestudio.wave.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		000000000000000512000000 /* Release configuration for PBXNativeTarget "WaveWidget" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/WaveWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/WaveWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Wave;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = pro.wavestudio.wave.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		000000000000000211000000 /* Debug configuration for PBXNativeTarget "WaveCLI" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -425,6 +542,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		000000000000000510000000 /* Build configuration list for PBXNativeTarget "WaveWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000511000000 /* Debug configuration for PBXNativeTarget "WaveWidget" */,
+				000000000000000512000000 /* Release configuration for PBXNativeTarget "WaveWidget" */,
+			);
+			defaultConfigurationName = Release;
+		};
 		000000000000000210000000 /* Build configuration list for PBXNativeTarget "WaveCLI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -463,6 +588,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		000000000000000000000330 /* PhosphorSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 000000000000000400000000 /* XCRemoteSwiftPackageReference "swift" */;
+			productName = PhosphorSwift;
+		};
 		000000000000000410000000 /* PhosphorSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 000000000000000400000000 /* XCRemoteSwiftPackageReference "swift" */;

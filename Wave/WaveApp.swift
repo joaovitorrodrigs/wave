@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         StatusBar.install()
         QuickAdd.install()
         Morning.start()
+        WidgetBridge.start()
     }
 }
 

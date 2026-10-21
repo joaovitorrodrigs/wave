@@ -79,7 +79,6 @@ enum StatusBar {
 /// Compact Today behind the menu bar glyph: events, tasks to tick, habits to tap.
 struct MenuBarPanel: View {
     @State private var store = Store()
-    @Query(sort: \Habit.created) private var habits: [Habit]
     @AppStorage("theme") private var theme = "system"
 
     var body: some View {
@@ -130,12 +129,6 @@ struct MenuBarPanel: View {
                 }
             }
 
-            if !habits.isEmpty {
-                Text("Habits").font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.6))
-                VStack(spacing: 8) {
-                    ForEach(habits) { HabitTile(habit: $0) }
-                }
-            }
         }
         .padding(20)
         .frame(width: 380)
@@ -157,72 +150,3 @@ struct MenuBarPanel: View {
     }
 }
 
-/// HabitKit-style tile, in Wave's surfaces: icon square, name and streak, big done button, dense grid.
-struct HabitTile: View {
-    let habit: Habit
-
-    var body: some View {
-        let done = habit.isDone(.now)
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                Icon(habit.icon, size: 20, color: habit.tint, weight: .fill)
-                    .frame(width: 40, height: 40)
-                    .background(habit.tint.opacity(0.18), in: RoundedRectangle(cornerRadius: 12))
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(habit.name).font(.wave(15, .semibold)).lineLimit(1)
-                    Text(habit.streak == 0 ? "No streak yet" : "\(habit.streak) day streak").font(.wave(13)).foregroundStyle(Theme.ink.opacity(0.5))
-                }
-                Spacer(minLength: 8)
-                Button { habit.toggle(.now) } label: {
-                    ZStack {
-                        if done {
-                            RoundedRectangle(cornerRadius: 12).fill(habit.tint)
-                            Icon("check", size: 18, color: Color(white: 0.1))
-                        } else {
-                            Circle().strokeBorder(habit.tint.opacity(0.35), lineWidth: 3).padding(3)
-                            Icon("plus", size: 16, color: habit.tint)
-                        }
-                    }
-                    .frame(width: 40, height: 40)
-                }
-                .buttonStyle(PressStyle())
-            }
-            HabitMiniGrid(habit: habit, width: 340 - 24)
-        }
-        .padding(12)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBlock))
-        .animation(.easeOut(duration: 0.2), value: done)
-    }
-}
-
-/// The habit's history in one Canvas draw call: as many weeks as fit the width, done cells in the habit's
-/// color, missed days in the same color dimmed, nothing after today.
-struct HabitMiniGrid: View {
-    let habit: Habit
-    let width: CGFloat
-    private let cell: CGFloat = 10
-    private let gap: CGFloat = 3
-
-    var body: some View {
-        let pitch = cell + gap
-        let weeks = max(1, Int((width + gap) / pitch))
-        let cal = Calendar.current
-        let today = cal.startOfDay(for: .now)
-        let weekEnd = cal.date(byAdding: .day, value: 7 - cal.component(.weekday, from: today), to: today)!
-        let start = cal.date(byAdding: .day, value: 1 - weeks * 7, to: weekEnd)!
-        let done = Set(habit.days.map { cal.startOfDay(for: $0) })
-        let tint = habit.tint
-        let dim = habit.tint.opacity(0.22)
-        Canvas { context, _ in
-            for w in 0..<weeks {
-                for d in 0..<7 {
-                    let day = cal.date(byAdding: .day, value: w * 7 + d, to: start)!
-                    if day > today { continue }
-                    let rect = CGRect(x: CGFloat(w) * pitch, y: CGFloat(d) * pitch, width: cell, height: cell)
-                    context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(done.contains(day) ? tint : dim))
-                }
-            }
-        }
-        .frame(width: CGFloat(weeks) * pitch - gap, height: 7 * pitch - gap)
-    }
-}

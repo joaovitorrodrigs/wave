@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import WidgetKit
 
 @Model final class Habit {
     var name: String
@@ -27,6 +28,7 @@ import SwiftUI
     func toggle(_ date: Date) {
         let day = Calendar.current.startOfDay(for: date)
         if let i = days.firstIndex(of: day) { days.remove(at: i) } else { days.append(day) }
+        WidgetCenter.shared.reloadTimelines(ofKind: "habits")
     }
 
     /// Consecutive days done, counted back from today, or from yesterday when today is still open.

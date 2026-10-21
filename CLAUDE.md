@@ -35,7 +35,16 @@ No exceptions.
   Code) and hosts without the matching usage string are denied silently, no prompt.
 - CLI `wave` shares code and store with the app. `task add|list|done`,
   `note add`, one set of commands per module, `--json` output for agents.
-- Menu bar panel: compact "Today" plus today's habits.
+- Menu bar: our own `NSStatusItem` and a borderless transparent panel (`MenuBar.swift`), not
+  `MenuBarExtra`, so there is no system chrome. Shows today's events and tasks. Habits are not
+  there: they are a widget.
+- Widget (`Widget/`, target `WaveWidget`, sandboxed, ad-hoc signed): the app's habit cards on the
+  desktop, tap the icon to check today. No app group (that entitlement needs a developer
+  certificate), so the app writes `habits.json` into the widget's own sandbox container
+  (`~/Library/Containers/pro.wavestudio.wave.widget/Data/Library/Application Support/Wave`) and
+  the widget writes `toggles.json` back; `WidgetBridge.swift` folds toggles into the store on
+  activation, on every save and through a file watcher while the app runs. The widget's first run
+  creates the container; until then the app has nowhere to write.
 - UI: a port of wavestudio.pro, not a native macOS look. Light only (the site has no dark
   mode): paper canvas, ink text, violet accent, green support, Instrument Sans (bundled, OFL).
   Hidden title bar; the site's navbar on top (brand left, page links centered, ink button
