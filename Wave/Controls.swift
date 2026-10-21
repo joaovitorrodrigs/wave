@@ -204,6 +204,7 @@ struct FitScroll<Content: View>: View {
             })
         }
         .scrollIndicators(.never)
+        .scrollClipDisabled()
         .frame(height: height == 0 ? nil : min(height, max))
     }
 }

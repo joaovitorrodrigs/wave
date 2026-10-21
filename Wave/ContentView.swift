@@ -224,6 +224,7 @@ struct TasksPage: View {
         let title = newTitle.trimmingCharacters(in: .whitespaces)
         guard !title.isEmpty else { return }
         context.insert(Todo(title: title))
+        try? context.save()
         newTitle = ""
         reload()
     }
@@ -269,7 +270,7 @@ struct TodoRow: View {
             }
             MenuButton(onDark: today && !isDone, items: [
                 ("Edit", false, { ui.open(.editTodo(todo)) }),
-                ("Delete", true, { context.delete(todo); reload() }),
+                ("Delete", true, { context.delete(todo); try? context.save(); reload() }),
             ])
             .opacity(hover ? 1 : 0)
         }
@@ -286,11 +287,12 @@ struct TodoRow: View {
     }
 
     private func toggle() {
-        if todo.done != nil { todo.done = nil; reload(); return }
+        if todo.done != nil { todo.done = nil; try? context.save(); reload(); return }
         checking = true
         Task {
             try? await Task.sleep(for: .seconds(0.35))
             todo.done = .now
+            try? context.save()
             reload()
         }
     }
@@ -314,7 +316,7 @@ struct TodoEditor: View {
                 HStack {
                     PanelTitle(text: todo == nil ? "New task" : "Edit task")
                     Spacer()
-                    if let todo { HoldButton(compact: true) { context.delete(todo); ui.close() } }
+                    if let todo { HoldButton(compact: true) { context.delete(todo); try? context.save(); ui.close() } }
                 }
                 if let kindPicker { kindPicker }
                 VStack(spacing: 8) {
@@ -345,6 +347,7 @@ struct TodoEditor: View {
         t.note = note
         t.due = hasDate ? Calendar.current.startOfDay(for: date) : nil
         if todo == nil { context.insert(t) }
+        try? context.save()
         ui.close()
     }
 }
