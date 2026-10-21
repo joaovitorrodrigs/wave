@@ -93,6 +93,8 @@ tasks, agenda (inside Today), habits, notes, finances, menu bar.
 Always pass `-derivedDataPath` outside the repo (for example `/tmp/wave-build`). The repo
 lives in an iCloud-synced folder; Finder metadata on build output makes codesign fail with
 "resource fork, Finder information, or similar detritus not allowed".
+After copying the Release build to `/Applications`, delete the build products: every leftover
+`Wave.app` gets registered by LaunchServices and shows up twice in Spotlight.
 
 ## Boundaries
 
