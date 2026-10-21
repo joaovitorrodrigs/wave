@@ -309,6 +309,7 @@ struct TodoEditor: View {
     @State private var hasDate = false
     @State private var date = Date.now
     @State private var month = Date.now
+    @State private var editingDate = false
 
     var body: some View {
         FitScroll(max: 760) {
@@ -326,8 +327,13 @@ struct TodoEditor: View {
                 VStack(spacing: 8) {
                     Switch(title: "Date", isOn: $hasDate)
                     if hasDate {
-                        MonthGrid(month: $month, selected: $date, eventDays: [])
-                            .padding(16).background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBlock))
+                        if todo != nil, !editingDate {
+                            DateSummary(date: date, editing: $editingDate)
+                        } else {
+                            if todo != nil { DateSummary(date: date, editing: $editingDate) }
+                            MonthGrid(month: $month, selected: $date, eventDays: [])
+                                .padding(16).background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBlock))
+                        }
                     }
                 }
                 PanelButtons(primary: todo == nil ? "Add task" : "Save", disabled: title.isEmpty, action: save)
@@ -495,6 +501,7 @@ struct ReminderEditor: View {
     @State private var repeats: EKRecurrenceFrequency?
     @State private var list: EKCalendar?
     @State private var priority = 0
+    @State private var editingDate = false
 
     var body: some View {
         FitScroll(max: 760) {
@@ -515,8 +522,11 @@ struct ReminderEditor: View {
                 VStack(spacing: 8) {
                     Switch(title: "Date", isOn: $hasDate)
                     if hasDate {
-                        MonthGrid(month: $month, selected: $date, eventDays: [])
-                            .padding(16).background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBlock))
+                        if reminder != nil { DateSummary(date: date, editing: $editingDate) }
+                        if reminder == nil || editingDate {
+                            MonthGrid(month: $month, selected: $date, eventDays: [])
+                                .padding(16).background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBlock))
+                        }
                         Switch(title: "Time", isOn: $hasTime)
                         if hasTime { TimeRow(date: $date) }
                         Switch(title: "Alert at the time", isOn: $alert)

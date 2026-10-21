@@ -387,7 +387,7 @@ struct MonthGrid: View {
                 monthButton("caret-right", 1)
             }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
-                ForEach(weekdays, id: \.self) { Text($0).font(.wave(13)).foregroundStyle(Theme.ink.opacity(0.4)) }
+                ForEach(Array(weekdays.enumerated()), id: \.offset) { _, s in Text(s).font(.wave(13)).foregroundStyle(Theme.ink.opacity(0.4)) }
                 ForEach(0..<42, id: \.self) { i in
                     let day = cal.date(byAdding: .day, value: i, to: gridStart)!
                     let inMonth = cal.isDate(day, equalTo: month, toGranularity: .month)

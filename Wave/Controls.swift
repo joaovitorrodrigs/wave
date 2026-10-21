@@ -136,6 +136,22 @@ struct DateField: View {
 
 }
 
+/// A set date, shown as text with a "Change" chip; the month grid only opens on request.
+struct DateSummary: View {
+    let date: Date
+    @Binding var editing: Bool
+    var body: some View {
+        HStack {
+            Text(date.formatted(.dateTime.weekday(.wide).day().month(.wide))).font(.wave(16, .medium))
+            Spacer()
+            Button { withAnimation(.easeOut(duration: 0.2)) { editing.toggle() } } label: { Chip(text: editing ? "Done" : "Change", selected: editing) }
+                .buttonStyle(PressStyle())
+        }
+        .padding(.horizontal, 20).padding(.vertical, 10)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
+    }
+}
+
 /// Hour and minute steppers plus the three usual times.
 struct TimeRow: View {
     @Binding var date: Date
