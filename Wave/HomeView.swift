@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import EventKit
+import MapKit
 
 /// The site's Home, as a dashboard: hero, the three social-proof cards, a featured grid (calendar), rows, FAQ rows.
 struct HomePage: View {
@@ -175,10 +176,32 @@ struct WeatherCard: View {
     }
 }
 
-/// Driving time with traffic between home and work, direction by the hour, tap the arrow to flip.
+/// Driving time with traffic between home and work, direction by the hour, tap the arrow to flip. The route
+/// is drawn on an Apple map that fills the right half of the card.
 struct CommuteCard: View {
     let commute: Commute
     var body: some View {
+        HStack(spacing: 16) {
+            details
+            if let route = commute.route, let from = commute.from, let to = commute.to {
+                Map(initialPosition: .rect(route.polyline.boundingMapRect.insetBy(dx: -route.polyline.boundingMapRect.width * 0.2, dy: -route.polyline.boundingMapRect.height * 0.2)), interactionModes: []) {
+                    MapPolyline(route.polyline).stroke(Theme.violet, style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+                    Annotation("", coordinate: from) { Circle().fill(Theme.ink).frame(width: 10, height: 10).overlay(Circle().stroke(Theme.paper, lineWidth: 2)) }
+                    Annotation("", coordinate: to) { Circle().fill(Theme.violet).frame(width: 10, height: 10).overlay(Circle().stroke(Theme.paper, lineWidth: 2)) }
+                }
+                .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll, showsTraffic: true))
+                .mapControlVisibility(.hidden)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.radiusBlock))
+                .id(route.polyline.pointCount)
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 240, alignment: .topLeading)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
+    }
+
+    private var details: some View {
         VStack(alignment: .leading, spacing: 0) {
             if !commute.hasAddresses {
                 Icon("car", size: 34, color: Theme.ink.opacity(0.4), weight: .fill)
@@ -208,7 +231,7 @@ struct CommuteCard: View {
                         if let error = commute.error { Text(error).font(.wave(13)).foregroundStyle(Theme.danger) }
                     }
                     Spacer()
-                    Icon("car", size: 44, weight: .fill)
+                    if commute.route == nil { Icon("car", size: 44, weight: .fill) }
                 }
                 Spacer(minLength: 16)
                 if let fetched = commute.fetched {
@@ -217,9 +240,8 @@ struct CommuteCard: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(32)
-        .frame(maxWidth: .infinity, minHeight: 240, alignment: .topLeading)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 }
 

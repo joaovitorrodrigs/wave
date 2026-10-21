@@ -7,6 +7,9 @@ import Observation
     var minutes: Int?
     var kilometers: Double?
     var via: String?
+    var route: MKRoute?
+    var from: CLLocationCoordinate2D?
+    var to: CLLocationCoordinate2D?
     var fetched: Date?
     var error: String?
     var toWork = Calendar.current.component(.hour, from: .now) < 12
@@ -32,6 +35,9 @@ import Observation
             request.transportType = .automobile
             let response = try await MKDirections(request: request).calculate()
             guard let route = response.routes.first else { throw CommuteError.noRoute }
+            self.route = route
+            self.from = from
+            self.to = to
             minutes = Int((route.expectedTravelTime / 60).rounded())
             kilometers = route.distance / 1000
             via = route.name.isEmpty ? nil : route.name
