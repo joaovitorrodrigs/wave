@@ -9,7 +9,7 @@ struct HabitSnapshot: Codable, Identifiable {
     var color: String
     var days: [Date]        // start-of-day instants
 
-    static let widgetBundle = "pro.wavestudio.wave.widget"
+    static let widgetBundle = "pro.wavestudio.wave.widgets"
 
     /// Where the widget's sandbox keeps its Application Support, seen from outside the sandbox.
     static var bridgeDirectory: URL {

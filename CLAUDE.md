@@ -41,7 +41,7 @@ No exceptions.
 - Widget (`Widget/`, target `WaveWidget`, sandboxed, ad-hoc signed): the app's habit cards on the
   desktop, tap the icon to check today. No app group (that entitlement needs a developer
   certificate), so the app writes `habits.json` into the widget's own sandbox container
-  (`~/Library/Containers/pro.wavestudio.wave.widget/Data/Library/Application Support/Wave`) and
+  (`~/Library/Containers/pro.wavestudio.wave.widgets/Data/Library/Application Support/Wave`) and
   the widget writes `toggles.json` back; `WidgetBridge.swift` folds toggles into the store on
   activation, on every save and through a file watcher while the app runs. The widget's first run
   creates the container; until then the app has nowhere to write.
