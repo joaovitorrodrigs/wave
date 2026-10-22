@@ -45,6 +45,7 @@ enum QuickAdd {
         panel = p
         place()
         p.makeKeyAndOrderFront(nil)
+        p.makeFirstResponder(host)
         resizeObserver = NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification, object: p, queue: .main) { _ in place() }
         monitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { _ in hide() }
     }
@@ -196,7 +197,14 @@ struct CapturePanel: View {
         .foregroundStyle(Theme.ink)
         .tint(Theme.violet)
         .preferredColorScheme(Theme.scheme(theme))
-        .onAppear { focused = true; Task { await store.load(); list = store.ek.defaultCalendarForNewReminders() } }
+        .onAppear { Task { await store.load(); list = store.ek.defaultCalendarForNewReminders() } }
+        .task {
+            // The panel becomes key a beat after the view appears; focus once it has.
+            for _ in 0..<5 {
+                try? await Task.sleep(for: .milliseconds(60))
+                focused = true
+            }
+        }
         .onExitCommand(perform: close)
         .animation(.spring(duration: 0.3, bounce: 0), value: sent.count)
     }

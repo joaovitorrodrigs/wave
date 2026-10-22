@@ -15,9 +15,12 @@ import Foundation
         self.due = due
     }
 
+    /// Open to-dos, soonest due first; the ones without a date come after, oldest first.
     static func open(_ context: ModelContext) -> [Todo] {
         let d = FetchDescriptor<Todo>(predicate: #Predicate { $0.done == nil }, sortBy: [SortDescriptor(\.created)])
-        return (try? context.fetch(d)) ?? []
+        return ((try? context.fetch(d)) ?? []).sorted {
+            ($0.due ?? .distantFuture, $0.created) < ($1.due ?? .distantFuture, $1.created)
+        }
     }
 
     /// Checked in the last 7 days, newest first; older ones are purged.
