@@ -22,10 +22,15 @@ No exceptions.
   grid, computed streak. Stored in SwiftData, local only, no iCloud, at
   `~/Library/Application Support/Wave/wave.store`. No CLI for habits yet.
 - Finances: read-only mirror of Banco MCP REST API (`api.mcp.ai/api/openfinance`, all
-  POST with JSON bodies; `GET /_endpoints` lists them). Accounts with balances and the last
-  30 days of transactions, cached in `~/Library/Application Support/Wave/finance.json`.
-  No manual entry. API key in the Keychain, service `pro.wavestudio.wave`, account
-  `bancomcp`, set from Settings (⌘,). App only, no CLI, same reasoning as habits.
+  POST with JSON bodies; `GET /_endpoints` lists them) plus Stripe. Twelve months of
+  transactions, accounts, card bills, investments and the bank's 130 categories, cached in
+  `~/Library/Application Support/Wave/finance-v2.json` and topped up incrementally (a week of
+  overlap) on every refresh; one net-worth point per day. No manual entry. Rules (SwiftData
+  `FinanceRule`: "description contains X" → rename, recategorize, ignore) and budgets
+  (`Budget` per parent category) are the user's layer, applied at display time over the whole
+  year. Five tabs on one page: Overview, Transactions, Cards, Investments, Rules. Charts are
+  Canvas (`Charts.swift`). CLI: `wave finance summary|transactions [--month YYYY-MM]`, read-only.
+  API key in the Keychain, service `pro.wavestudio.wave`, account `bancomcp`, set from Settings.
 - CLI `wave` ships inside the `.app` at `Contents/Helpers/wave` (not `MacOS/`: APFS is
   case-insensitive and `wave` would overwrite the app binary `Wave`). Target is `WaveCLI`,
   module `WaveCLI`, product `wave`, for the same reason.

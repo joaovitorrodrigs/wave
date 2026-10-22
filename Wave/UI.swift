@@ -11,6 +11,7 @@ import SwiftData
     /// Notes page reads these: a note to select, or a request to create one.
     var noteToOpen: Note?
     var noteRequest = 0
+    var rulePrefill = ""
 
     func openNote(_ note: Note) { noteToOpen = note; page = .notes }
     func requestNewNote() { page = .notes; noteRequest += 1 }
@@ -51,6 +52,7 @@ struct MenuState {
 enum Modal: Identifiable {
     case newTask, editTask(EKReminder), editTodo(Todo), newHabit, editHabit(Habit), settings, palette
     case newEvent(Date), editEvent(EKEvent), newClient, editClient(Client)
+    case rule(FinanceRule?), transaction(Shown), budget(String)
 
     var id: String {
         switch self {
@@ -65,6 +67,9 @@ enum Modal: Identifiable {
         case .editEvent(let e): "event-\(e.eventIdentifier ?? "")"
         case .newClient: "newClient"
         case .editClient(let c): "client-\(c.persistentModelID)"
+        case .rule(let r): "rule-\(r.map { "\($0.persistentModelID)" } ?? "new")"
+        case .transaction(let t): "tx-\(t.id)"
+        case .budget(let c): "budget-\(c)"
         }
     }
 }
@@ -121,6 +126,9 @@ struct ModalHost: View {
         case .editEvent(let e): EventEditor(store: store, event: e, day: e.startDate)
         case .newClient: ClientEditor(client: nil)
         case .editClient(let c): ClientEditor(client: c)
+        case .rule(let r): RuleEditor(rule: r, finance: finance, prefill: ui.rulePrefill).onDisappear { ui.rulePrefill = "" }
+        case .transaction(let t): TransactionDetail(shown: t, finance: finance)
+        case .budget(let c): BudgetEditor(category: c)
         }
     }
 }

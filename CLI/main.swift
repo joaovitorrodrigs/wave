@@ -34,6 +34,8 @@ func usage() -> Never {
            wave reminder done <id>
            wave note add <title> [text]
            wave note list [query]
+           wave finance summary [--month YYYY-MM]
+           wave finance transactions [--month YYYY-MM] [query]
     Add --json for machine-readable output.
     """)
     exit(2)
@@ -60,6 +62,9 @@ func parseDate(_ s: String) -> Date? {
 }
 
 let iso = ISO8601DateFormatter()
+extension DateFormatter {
+    static let month: DateFormatter = { let f = DateFormatter(); f.dateFormat = "yyyy-MM"; return f }()
+}
 
 func taskRows(_ items: [EKReminder]) -> [[String: Any]] {
     items.map { ["id": $0.id, "title": $0.title ?? "", "list": $0.calendar.title, "due": $0.dueDate.map(iso.string) as Any] }
@@ -85,8 +90,9 @@ func emit(_ items: [EKReminder]) {
 guard !args.isEmpty else { usage() }
 let listName = option("--list")
 let due = option("--due")
+let monthOption = option("--month")
 var command = args.removeFirst()
-if command == "task" || command == "note" || command == "reminder" {
+if command == "task" || command == "note" || command == "reminder" || command == "finance" {
     guard !args.isEmpty else { usage() }
     command += " " + args.removeFirst()
 }
@@ -94,7 +100,7 @@ if command == "task" || command == "note" || command == "reminder" {
 let store = Store()
 
 func run() async throws {
-    if !command.hasPrefix("note"), !command.hasPrefix("task") {
+    if !command.hasPrefix("note"), !command.hasPrefix("task"), !command.hasPrefix("finance") {
         await store.load()
         guard store.authorized else {
             print("Reminders access denied (status \(EKEventStore.authorizationStatus(for: .reminder).rawValue))\(store.accessError.map { ": " + $0 } ?? "").")
@@ -155,6 +161,38 @@ func run() async throws {
         r.isCompleted = true
         try store.save(r)
         print("Done: \(r.title ?? "")")
+    case "finance summary", "finance transactions":
+        let snapshot = FinanceSnapshot.load()
+        let rules = FinanceRule.all(ModelContext(Database.container))
+        let rows = snapshot.shown(rules)
+        let cal = Calendar.current
+        var start = cal.date(from: cal.dateComponents([.year, .month], from: .now))!
+        if let m = monthOption, let d = DateFormatter.month.date(from: m) { start = d }
+        let interval = DateInterval(start: start, end: cal.date(byAdding: .month, value: 1, to: start)!)
+        let inMonth = rows.filter { interval.contains($0.date) }
+        if command == "finance summary" {
+            let counted = inMonth.filter { !$0.ignored }
+            let income = counted.filter { $0.value > 0 }.reduce(Decimal(0)) { $0 + $1.value }
+            let spent = -counted.filter { $0.value < 0 }.reduce(Decimal(0)) { $0 + $1.value }
+            var cats: [String: Decimal] = [:]
+            for r in counted where r.value < 0 { cats[r.category, default: 0] -= r.value }
+            let top = cats.sorted { $0.value > $1.value }.prefix(8)
+            if json {
+                printJSON(["month": DateFormatter.month.string(from: start), "income": "\(income)", "spent": "\(spent)",
+                           "accounts": snapshot.accounts.map { ["name": $0.title, "type": $0.type, "balance": $0.balance] },
+                           "investments": "\(snapshot.investments.reduce(Decimal(0)) { $0 + $1.net })",
+                           "categories": top.map { ["name": $0.key, "amount": "\($0.value)"] }])
+                return
+            }
+            print("\(DateFormatter.month.string(from: start)): in \(income.formatted(.currency(code: "BRL"))), out \(spent.formatted(.currency(code: "BRL")))")
+            for a in snapshot.accounts { print("  \(a.title)  \(a.value.formatted(.currency(code: "BRL")))") }
+            for c in top { print("  \(c.key)  \(c.value.formatted(.currency(code: "BRL")))") }
+        } else {
+            let q = args.first ?? ""
+            let list = inMonth.filter { q.isEmpty || $0.title.localizedCaseInsensitiveContains(q) || $0.raw.description.localizedCaseInsensitiveContains(q) }
+            if json { printJSON(list.map { ["date": iso.string(from: $0.date), "title": $0.title, "description": $0.raw.description, "amount": $0.raw.amount, "category": $0.category, "account": $0.raw.account ?? "", "ignored": $0.ignored] }); return }
+            for r in list { print("\(r.date.formatted(.dateTime.day().month(.abbreviated)))  \(r.title)  \(r.value.formatted(.currency(code: "BRL")))  [\(r.category)]\(r.ignored ? "  ignored" : "")") }
+        }
     case "note add":
         guard let title = args.first else { usage() }
         let context = ModelContext(Database.container)
