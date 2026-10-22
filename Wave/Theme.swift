@@ -250,14 +250,14 @@ struct ThemePicker: View {
     }
 }
 
-/// `rounded-[40px] bg-black` with `.grain`, like the process and final CTA sections.
+/// `rounded-[40px] bg-black`, like the process and final CTA sections. No grain in the app, by decision.
 struct DarkSection<Content: View>: View {
     @ViewBuilder let content: Content
     var body: some View {
         content
             .padding(40)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background { ZStack { Theme.black; Grain() } }
+            .background(Theme.black)
             .clipShape(RoundedRectangle(cornerRadius: Theme.radiusSection))
     }
 }

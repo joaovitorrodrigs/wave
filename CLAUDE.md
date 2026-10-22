@@ -75,7 +75,7 @@ No exceptions.
   127.0.0.1, refresh token in Keychain (`Gmail.swift`). Stripe: restricted key in Keychain,
   balance and this month's charges. Keys never leave the Keychain; nothing is hardcoded.
 - Dark mode: flat black canvas, ink and paper swap, `#121212` card becomes light gray, shadows
-  stay black, grain only on the dark sections. Setting System/Light/Dark in `@AppStorage("theme")`.
+  stay black. No grain anywhere in the app (João, 2026-10-22): the texture is site-only. Setting System/Light/Dark in `@AppStorage("theme")`.
 - Navigation is the Dock (`Dock.swift`, port of skecher-ui's dock): magnification only, no hover
   highlight, violet for the active page, search and settings after a separator.
 - Danger red `#DC2F3A` (not on the site) for delete, overdue, errors, rising spend.
