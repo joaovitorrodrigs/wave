@@ -188,3 +188,18 @@ extension FinanceSnapshot {
         }
     }
 }
+
+/// A Phosphor icon for each of the bank's parent categories (Portuguese names), with a tag as the fallback.
+enum CategoryIcon {
+    static let map: [String: String] = [
+        "Alimentos e bebidas": "fork-knife", "Apostas": "coins", "Compras": "shopping-bag", "Doações": "hand-heart",
+        "Empréstimos e financiamento": "bank", "Impostos": "receipt", "Investimentos": "trend-up", "Lazer": "confetti",
+        "Moradia": "house", "Obrigações legais": "receipt", "Outros": "tag", "Renda": "money", "Saúde": "heartbeat",
+        "Saúde e bem-estar": "heartbeat", "Seguros": "shield-check", "Serviços": "wrench", "Serviços automotivos": "car",
+        "Serviços de utilidade pública": "lightning", "Serviços digitais": "device-mobile", "Supermercado": "shopping-cart",
+        "Taxas bancárias": "coins", "Transferência mesma titularidade": "arrows-left-right", "Transferências": "arrows-left-right",
+        "Transporte": "bus", "Viagens": "airplane", "Educação": "graduation-cap", "Pets": "paw-print",
+        "Telecomunicações": "phone", "Credit card payment": "credit-card", "Pagamento de fatura": "credit-card",
+    ]
+    static func name(for category: String) -> String { map[category] ?? "tag" }
+}

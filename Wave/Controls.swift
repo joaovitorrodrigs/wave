@@ -213,6 +213,7 @@ struct DropdownChip: View {
     let label: String
     let value: String
     let options: [String]
+    var icons: [String]? = nil
     let onPick: (String?) -> Void
     @Environment(UI.self) private var ui
     @State private var frame = CGRect.zero
@@ -220,8 +221,9 @@ struct DropdownChip: View {
     var body: some View {
         Button {
             var items: [(String, Bool, () -> Void)] = [("All", false, { onPick(nil) })]
-            items += options.map { o in ((o == value ? "✓ " : "") + o, false, { onPick(o) }) }
-            ui.openMenu(items, at: frame)
+            items += options.map { o in (o, false, { onPick(o) }) }
+            let icons: [String?] = [nil] + (icons ?? Array(repeating: nil, count: options.count))
+            ui.openMenu(items, at: frame, icons: icons, checked: value == "All" ? 0 : (options.firstIndex(of: value).map { $0 + 1 }))
         } label: {
             HStack(spacing: 6) {
                 Text(label).font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.5))

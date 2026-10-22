@@ -17,8 +17,8 @@ import SwiftData
     func requestNewNote() { page = .notes; noteRequest += 1 }
 
     /// Menus render in a window-level layer so rows below cannot cover them and leaving the row does not close them.
-    func openMenu(_ items: [(String, Bool, () -> Void)], at anchor: CGRect) {
-        withAnimation(.easeOut(duration: 0.15)) { menu = MenuState(items: items, anchor: anchor) }
+    func openMenu(_ items: [(String, Bool, () -> Void)], at anchor: CGRect, icons: [String?] = [], checked: Int? = nil) {
+        withAnimation(.easeOut(duration: 0.15)) { menu = MenuState(items: items, anchor: anchor, icons: icons, checked: checked) }
     }
 
     func closeMenu() {
@@ -47,6 +47,8 @@ import SwiftData
 struct MenuState {
     let items: [(String, Bool, () -> Void)]   // title, destructive, action
     let anchor: CGRect                        // the ⋯ button, in the window's coordinate space
+    var icons: [String?] = []                 // optional Phosphor icon per item
+    var checked: Int? = nil                   // index of the current choice, for dropdowns
 }
 
 enum Modal: Identifiable {
@@ -84,16 +86,22 @@ struct ModalHost: View {
         ZStack(alignment: .topLeading) {
             if let menu = ui.menu {
                 Color.clear.contentShape(Rectangle()).ignoresSafeArea().onTapGesture { ui.closeMenu() }
-                VStack(spacing: 6) {
-                    ForEach(Array(menu.items.enumerated()), id: \.offset) { _, item in
-                        if item.1 {
-                            HoldButton(title: "Hold to \(item.0.lowercased())", doneTitle: "Done", compact: true, fullWidth: true) { ui.closeMenu(); item.2() }
-                        } else {
-                            MenuPill(title: item.0, icon: ["Edit", "Rename"].contains(item.0) ? "pencil-simple" : nil) { ui.closeMenu(); item.2() }
+                ScrollView {
+                    VStack(spacing: 4) {
+                        ForEach(Array(menu.items.enumerated()), id: \.offset) { i, item in
+                            if item.1 {
+                                HoldButton(title: "Hold to \(item.0.lowercased())", doneTitle: "Done", compact: true, fullWidth: true) { ui.closeMenu(); item.2() }
+                            } else {
+                                MenuPill(title: item.0, icon: menu.icons.indices.contains(i) ? menu.icons[i] : (["Edit", "Rename"].contains(item.0) ? "pencil-simple" : nil),
+                                         checked: menu.checked == i, leading: !menu.icons.isEmpty) { ui.closeMenu(); item.2() }
+                            }
                         }
                     }
                 }
-                .frame(width: max(196, min(320, CGFloat(menu.items.map(\.0.count).max() ?? 0) * 8 + 60)))
+                .scrollIndicators(.never)
+                .frame(width: max(196, min(320, CGFloat(menu.items.map(\.0.count).max() ?? 0) * 8 + 76)))
+                .frame(maxHeight: 380)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(6)
                 .background(Theme.paper, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
                 .shadow(color: Theme.shadow.opacity(0.18), radius: 14, x: 6, y: 10)
@@ -137,17 +145,22 @@ struct ModalHost: View {
 struct MenuPill: View {
     let title: String
     var icon: String? = nil
+    var checked = false
+    var leading = false          // dropdown rows: icon and text on the left, check on the right
     let action: () -> Void
     @State private var hover = false
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
-                if let icon { Icon(icon, size: 14) }
+                if let icon { Icon(icon, size: 14, color: checked ? Theme.paper : Theme.ink) }
                 Text(title).font(.wave(13, .medium))
+                if leading { Spacer(minLength: 8) }
+                if checked { Icon("check", size: 11, color: Theme.paper) }
             }
-            .foregroundStyle(Theme.ink)
-            .frame(maxWidth: .infinity).frame(height: 36)
-            .background(Theme.ink.opacity(hover ? 0.1 : 0.05), in: RoundedRectangle(cornerRadius: 14))
+            .padding(.horizontal, leading ? 12 : 0)
+            .foregroundStyle(checked ? Theme.paper : Theme.ink)
+            .frame(maxWidth: .infinity, alignment: leading ? .leading : .center).frame(height: 36)
+            .background(checked ? Theme.ink : Theme.ink.opacity(hover ? 0.1 : 0.05), in: RoundedRectangle(cornerRadius: 14))
             .contentShape(Rectangle())
         }
         .buttonStyle(PressStyle())

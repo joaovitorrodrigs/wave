@@ -208,7 +208,7 @@ struct FinancePage: View {
                              options: finance.accounts.map { $0.title.capitalized }) { pick in
                     accountFilter = pick.flatMap { name in finance.accounts.first { $0.title.capitalized == name }?.id }
                 }
-                DropdownChip(label: "Category", value: categoryFilter ?? "All", options: categoriesHere) { categoryFilter = $0 }
+                DropdownChip(label: "Category", value: categoryFilter ?? "All", options: categoriesHere, icons: categoriesHere.map(CategoryIcon.name(for:))) { categoryFilter = $0 }
                 if accountFilter != nil || categoryFilter != nil || !query.isEmpty {
                     Button { accountFilter = nil; categoryFilter = nil; query = "" } label: {
                         HStack(spacing: 4) { Icon("x", size: 11, color: Theme.ink.opacity(0.6)); Text("Clear").font(.wave(14)) }
@@ -454,7 +454,12 @@ struct CategoryBudgetRow: View {
     var body: some View {
         let over = budget.map { amount > $0 } ?? false
         HStack(spacing: 24) {
-            Text(name).font(.wave(18, .medium)).tracking(-0.4).lineLimit(1).frame(width: 220, alignment: .leading)
+            HStack(spacing: 12) {
+                Icon(CategoryIcon.name(for: name), size: 18, color: Theme.ink.opacity(0.7))
+                    .frame(width: 36, height: 36).background(Theme.chip, in: RoundedRectangle(cornerRadius: 12))
+                Text(name).font(.wave(18, .medium)).tracking(-0.4).lineLimit(1)
+            }
+            .frame(width: 260, alignment: .leading)
             ShareBar(share: share, over: over)
             Text(amount, format: .currency(code: "BRL")).font(.wave(18, .medium)).monospacedDigit().frame(width: 130, alignment: .trailing)
                 .foregroundStyle(over ? Theme.danger : Theme.ink)
@@ -483,7 +488,13 @@ struct ShownRow: View {
                     Text(row.raw.description).font(.wave(12)).foregroundStyle(Theme.ink.opacity(0.4)).lineLimit(1)
                 }
             }
-            Chip(text: row.category)
+            HStack(spacing: 6) {
+                Icon(CategoryIcon.name(for: row.category), size: 13, color: Theme.ink.opacity(0.7))
+                Text(row.category).font(.wave(14)).lineLimit(1)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 7)
+            .foregroundStyle(Theme.ink.opacity(0.7))
+            .background(Theme.chip, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
             if row.ignored { Chip(text: "ignored", tint: Theme.danger) }
             Spacer()
             Text(row.raw.account ?? "").font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.5))
