@@ -22,16 +22,18 @@ struct HomePage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             hero
-            HStack(alignment: .top, spacing: 16) {
+            HStack(spacing: 16) {
                 TodayCard(events: todayEvents).rise(0.15)
                 MoneyCard(finance: finance).rise(0.2)
                 HabitsDeck(habits: habits).rise(0.25)
             }
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 64)
-            HStack(alignment: .top, spacing: 16) {
+            HStack(spacing: 16) {
                 WeatherCard(weather: weather).rise(0.3)
                 CommuteCard(commute: commute).rise(0.35)
             }
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 16)
 
             HStack(alignment: .firstTextBaseline) {
@@ -177,7 +179,7 @@ struct WeatherCard: View {
             Spacer(minLength: 0)
         }
         .padding(32)
-        .frame(maxWidth: .infinity, minHeight: 240, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 240, maxHeight: .infinity, alignment: .topLeading)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
     }
 }
@@ -203,7 +205,7 @@ struct CommuteCard: View {
             }
         }
         .padding(16)
-        .frame(maxWidth: .infinity, minHeight: 240, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 240, maxHeight: .infinity, alignment: .topLeading)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
     }
 
@@ -280,7 +282,7 @@ struct TodayCard: View {
             Spacer(minLength: 0)
         }
         .padding(32)
-        .frame(maxWidth: .infinity, minHeight: 300, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 300, maxHeight: .infinity, alignment: .topLeading)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
         .task { if gmail.connected, gmail.messages.isEmpty { await gmail.load() } }
     }
@@ -312,7 +314,7 @@ struct MoneyCard: View {
         }
         .foregroundStyle(Theme.paper)
         .padding(32)
-        .frame(maxWidth: .infinity, minHeight: 300, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 300, maxHeight: .infinity, alignment: .topLeading)
         .background(Theme.ink, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
         .shadow(color: Theme.shadow.opacity(0.4), radius: 16, x: 16, y: 24)
     }
@@ -345,7 +347,7 @@ struct HabitsDeck: View {
             Spacer(minLength: 0)
         }
         .padding(32).padding(.top, 8)
-        .frame(maxWidth: .infinity, minHeight: 300, alignment: .top)
+        .frame(maxWidth: .infinity, minHeight: 300, maxHeight: .infinity, alignment: .top)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
         .overlay(alignment: .top) {
             HStack(spacing: 0) {

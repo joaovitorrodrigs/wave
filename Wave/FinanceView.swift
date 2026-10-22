@@ -113,10 +113,11 @@ struct FinancePage: View {
             DarkSection {
                 VStack(alignment: .leading, spacing: 28) {
                     Eyebrow(text: "Accounts", onDark: true)
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: finance.stripe == nil ? 2 : 3), spacing: 16) {
+                    HStack(spacing: 16) {
                         ForEach(finance.accounts) { AccountCard(account: $0) }
                         if let stripe = finance.stripe { StripeCard(stripe: stripe) }
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .padding(.top, 40).rise(0.15)
@@ -126,6 +127,7 @@ struct FinancePage: View {
                 KPI(title: "Out this month", value: now.spent, previous: before.spent, upIsGood: false)
                 KPI(title: "Left", value: now.income - now.spent, previous: before.income - before.spent, upIsGood: true)
             }
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 16).rise(0.2)
 
             HStack(spacing: 16) {
@@ -138,7 +140,7 @@ struct FinancePage: View {
                     }
                     BarPairsChart(data: finance.trend(shown)).frame(height: 180)
                 }
-                .padding(28).frame(maxWidth: .infinity, alignment: .topLeading)
+                .padding(28).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
 
                 VStack(alignment: .leading, spacing: 16) {
@@ -149,9 +151,10 @@ struct FinancePage: View {
                         Text("One point a day. Come back tomorrow for a line.").foregroundStyle(Theme.ink.opacity(0.5)).frame(height: 180)
                     }
                 }
-                .padding(28).frame(maxWidth: .infinity, alignment: .topLeading)
+                .padding(28).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusBig))
             }
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 16).rise(0.25)
 
             if !categories.isEmpty {
@@ -252,7 +255,7 @@ struct FinancePage: View {
                     DarkSection {
                         VStack(alignment: .leading, spacing: 28) {
                             Eyebrow(text: account.title.capitalized, onDark: true)
-                            HStack(alignment: .top, spacing: 16) {
+                            HStack(spacing: 16) {
                                 AccountCard(account: account)
                                 if let bill = bills.first {
                                     VStack(alignment: .leading, spacing: 0) {
@@ -262,10 +265,11 @@ struct FinancePage: View {
                                         Text(bill.total, format: .currency(code: "BRL")).font(.wave(36, .medium)).tracking(-0.9).monospacedDigit().foregroundStyle(Theme.paper).padding(.top, 24)
                                         Text("minimum \(bill.minimum.formatted(.currency(code: "BRL")))").foregroundStyle(Theme.paper.opacity(0.5)).padding(.top, 8)
                                     }
-                                    .padding(32).frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(32).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                                     .background(Theme.darkCard, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
                                 }
                             }
+                            .fixedSize(horizontal: false, vertical: true)
                         }
                     }
                     .padding(.top, 40).rise(0.15)
@@ -319,6 +323,7 @@ struct FinancePage: View {
                 KPI(title: "Gross yield", value: gross - invested, previous: nil, upIsGood: true, detail: "taxes \((gross - net).formatted(.currency(code: "BRL")))")
                 KPI(title: "This month", value: monthDelta ?? 0, previous: nil, upIsGood: true, detail: monthDelta == nil ? "first point today" : nil)
             }
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 40).rise(0.15)
 
             if worth.count >= 2 {
@@ -433,7 +438,7 @@ struct KPI: View {
                     .font(.wave(13, .medium)).foregroundStyle(good ? Theme.brand : Theme.danger)
             }
         }
-        .padding(24).frame(maxWidth: .infinity, alignment: .leading)
+        .padding(24).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
     }
 }
@@ -509,7 +514,7 @@ struct StripeCard: View {
                 .foregroundStyle(Theme.paper.opacity(0.5)).padding(.top, 8)
         }
         .padding(32)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Theme.darkCard, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
     }
 }
@@ -531,7 +536,7 @@ struct AccountCard: View {
             }
         }
         .padding(32)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Theme.darkCard, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
     }
 }
