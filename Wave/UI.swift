@@ -93,11 +93,11 @@ struct ModalHost: View {
                         }
                     }
                 }
-                .frame(width: 196)
+                .frame(width: max(196, min(320, CGFloat(menu.items.map(\.0.count).max() ?? 0) * 8 + 60)))
                 .padding(6)
                 .background(Theme.paper, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
                 .shadow(color: Theme.shadow.opacity(0.18), radius: 14, x: 6, y: 10)
-                .offset(x: max(8, menu.anchor.maxX - 208), y: menu.anchor.maxY + 6)
+                .offset(x: max(8, min(menu.anchor.minX, 1400)), y: menu.anchor.maxY + 6)
                 .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .topTrailing)))
             }
             if let modal = ui.modal {

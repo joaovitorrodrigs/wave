@@ -208,6 +208,57 @@ struct TimeStepper: View {
     }
 }
 
+/// Filter pill that opens its options in the window-level menu: "Account · All ▾".
+struct DropdownChip: View {
+    let label: String
+    let value: String
+    let options: [String]
+    let onPick: (String?) -> Void
+    @Environment(UI.self) private var ui
+    @State private var frame = CGRect.zero
+
+    var body: some View {
+        Button {
+            var items: [(String, Bool, () -> Void)] = [("All", false, { onPick(nil) })]
+            items += options.map { o in ((o == value ? "✓ " : "") + o, false, { onPick(o) }) }
+            ui.openMenu(items, at: frame)
+        } label: {
+            HStack(spacing: 6) {
+                Text(label).font(.wave(14)).foregroundStyle(Theme.ink.opacity(0.5))
+                Text(value).font(.wave(14, .medium)).lineLimit(1)
+                Icon("caret-down", size: 11, color: Theme.ink.opacity(0.6))
+            }
+            .padding(.horizontal, 14).padding(.vertical, 8)
+            .background(Theme.chip, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
+        }
+        .buttonStyle(PressStyle())
+        .background(GeometryReader { g in
+            Color.clear.onAppear { frame = g.frame(in: .global) }.onChange(of: g.frame(in: .global)) { _, new in frame = new }
+        })
+    }
+}
+
+/// ‹ Month › stepper.
+struct MonthStepper: View {
+    @Binding var offset: Int
+    let month: (Int) -> DateInterval
+    var body: some View {
+        HStack(spacing: 6) {
+            step("caret-left") { offset -= 1 }
+            Button { offset = 0 } label: {
+                Text(month(offset).start.formatted(.dateTime.month(.wide).year())).font(.wave(14, .medium)).frame(minWidth: 130)
+                    .padding(.horizontal, 10).padding(.vertical, 8)
+            }
+            .buttonStyle(.plain)
+            step("caret-right") { if offset < 0 { offset += 1 } }
+        }
+        .background(Theme.chip, in: RoundedRectangle(cornerRadius: Theme.radiusButton))
+    }
+    private func step(_ icon: String, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) { Icon(icon, size: 12).frame(width: 34, height: 34) }.buttonStyle(PressStyle())
+    }
+}
+
 /// Scrolls only when the content is taller than `max`; otherwise it is exactly as tall as its content.
 struct FitScroll<Content: View>: View {
     let max: CGFloat

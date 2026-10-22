@@ -199,17 +199,19 @@ struct FinancePage: View {
         let days = Dictionary(grouping: rows) { Calendar.current.startOfDay(for: $0.date) }.sorted { $0.key > $1.key }
         let categoriesHere = Array(Set(shown.filter { currentMonth.contains($0.date) }.map(\.category))).sorted()
         return VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 8) {
-                ForEach(0..<12, id: \.self) { i in
-                    let m = finance.month(-i)
-                    Button { monthOffset = -i } label: { Chip(text: m.start.formatted(.dateTime.month(.abbreviated)), selected: monthOffset == -i) }.buttonStyle(PressStyle())
+            HStack(spacing: 10) {
+                MonthStepper(offset: $monthOffset, month: finance.month)
+                DropdownChip(label: "Account", value: finance.accounts.first { $0.id == accountFilter }?.title.capitalized ?? "All",
+                             options: finance.accounts.map { $0.title.capitalized }) { pick in
+                    accountFilter = pick.flatMap { name in finance.accounts.first { $0.title.capitalized == name }?.id }
                 }
-            }
-            .padding(.top, 32).rise(0.15)
-            HStack(spacing: 8) {
-                Button { accountFilter = nil } label: { Chip(text: "All accounts", selected: accountFilter == nil) }.buttonStyle(PressStyle())
-                ForEach(finance.accounts) { a in
-                    Button { accountFilter = a.id } label: { Chip(text: a.title.capitalized, selected: accountFilter == a.id) }.buttonStyle(PressStyle())
+                DropdownChip(label: "Category", value: categoryFilter ?? "All", options: categoriesHere) { categoryFilter = $0 }
+                if accountFilter != nil || categoryFilter != nil || !query.isEmpty {
+                    Button { accountFilter = nil; categoryFilter = nil; query = "" } label: {
+                        HStack(spacing: 4) { Icon("x", size: 11, color: Theme.ink.opacity(0.6)); Text("Clear").font(.wave(14)) }
+                            .padding(.horizontal, 12).padding(.vertical, 8)
+                    }
+                    .buttonStyle(PressStyle())
                 }
                 Spacer()
                 HStack(spacing: 10) {
@@ -219,19 +221,7 @@ struct FinancePage: View {
                 .padding(.horizontal, 16).padding(.vertical, 9).frame(width: 260)
                 .background(Theme.paper.opacity(0.6), in: Capsule()).overlay(Capsule().stroke(Theme.ink.opacity(0.1)))
             }
-            .padding(.top, 12).rise(0.2)
-            if !categoriesHere.isEmpty {
-                ScrollView(.horizontal) {
-                    HStack(spacing: 8) {
-                        Button { categoryFilter = nil } label: { Chip(text: "All categories", selected: categoryFilter == nil) }.buttonStyle(PressStyle())
-                        ForEach(categoriesHere, id: \.self) { c in
-                            Button { categoryFilter = categoryFilter == c ? nil : c } label: { Chip(text: c, selected: categoryFilter == c) }.buttonStyle(PressStyle())
-                        }
-                    }
-                }
-                .scrollIndicators(.never)
-                .padding(.top, 12).rise(0.25)
-            }
+            .padding(.top, 32).rise(0.15)
 
             if rows.isEmpty {
                 Text("Nothing here.").foregroundStyle(Theme.ink.opacity(0.5)).padding(.top, 48)
