@@ -77,7 +77,7 @@ struct WeekView: View {
                     HStack(spacing: 8) {
                         Text(day.formatted(.dateTime.weekday(.abbreviated))).font(.wave(13)).foregroundStyle(Theme.ink.opacity(0.5))
                         Text(day.formatted(.dateTime.day())).font(.wave(18, .medium))
-                            .foregroundStyle(today ? Theme.paper : Theme.ink)
+                            .foregroundStyle(today ? Theme.onAccent : Theme.ink)
                             .frame(width: 32, height: 32)
                             .background(today ? Theme.violet : .clear, in: Circle())
                     }

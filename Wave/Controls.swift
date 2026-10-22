@@ -242,6 +242,7 @@ struct Spinner: View {
 /// `⋯` button. The menu itself is drawn by ModalHost, above every row, and closes on a click anywhere else.
 struct MenuButton: View {
     var onDark = false
+    var color: Color? = nil                   // icon colour override, for violet rows
     let items: [(String, Bool, () -> Void)]   // title, destructive, action
     @Environment(UI.self) private var ui
     @State private var frame = CGRect.zero
@@ -250,9 +251,9 @@ struct MenuButton: View {
         Button {
             if ui.menu != nil { ui.closeMenu() } else { ui.openMenu(items, at: frame) }
         } label: {
-            Icon("dots-three", size: 18, color: onDark ? Theme.paper : Theme.ink)
+            Icon("dots-three", size: 18, color: color ?? (onDark ? Theme.paper : Theme.ink))
                 .frame(width: 32, height: 32)
-                .background(onDark ? Theme.paper.opacity(0.15) : Theme.chip, in: RoundedRectangle(cornerRadius: 10))
+                .background((color ?? (onDark ? Theme.paper : Theme.ink)).opacity(onDark ? 0.15 : 0.05), in: RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
         .background(GeometryReader { g in

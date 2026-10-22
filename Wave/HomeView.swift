@@ -352,12 +352,12 @@ struct HabitsDeck: View {
                 HStack(spacing: -10) {
                     ForEach(done.prefix(4)) { habit in
                         Icon(habit.icon, size: 16, color: Theme.brand, weight: .fill)
-                            .frame(width: 36, height: 36).background(Theme.paper, in: Circle())
+                            .frame(width: 36, height: 36).background(Theme.onAccent, in: Circle())
                             .overlay(Circle().stroke(Theme.brand, lineWidth: 2))
                     }
                 }
                 Text(habits.isEmpty ? "Nothing tracked" : "\(done.count) of \(habits.count) done today")
-                    .font(.wave(16, .medium)).foregroundStyle(Theme.paper)
+                    .font(.wave(16, .medium)).foregroundStyle(Theme.onAccent)
                     .padding(.leading, done.isEmpty ? 10 : 12).padding(.trailing, 16)
             }
             .padding(6)

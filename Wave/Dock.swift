@@ -29,7 +29,7 @@ struct Dock: View {
                 } else {
                     let size = size(for: item)
                     Button(action: item.action) {
-                        Icon(item.icon, size: size * 0.5, color: Theme.paper, weight: .fill)
+                        Icon(item.icon, size: size * 0.5, color: item.active ? Theme.onAccent : Theme.paper, weight: .fill)
                             .frame(width: size, height: size)
                             .background(item.active ? Theme.violet : Color.clear, in: RoundedRectangle(cornerRadius: 14))
                     }

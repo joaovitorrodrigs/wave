@@ -250,7 +250,7 @@ struct TodoRow: View {
         let isDone = todo.done != nil
         let today = todo.due.map { Calendar.current.isDateInToday($0) } ?? false
         let overdue = todo.due.map { $0 < Calendar.current.startOfDay(for: .now) } ?? false
-        let fg = today && !isDone ? Theme.paper : Theme.ink
+        let fg = today && !isDone ? Theme.onAccent : Theme.ink
         HStack(spacing: 20) {
             Button(action: toggle) {
                 ZStack {
@@ -268,7 +268,7 @@ struct TodoRow: View {
                 Text(today ? "Today" : due.formatted(.dateTime.day().month(.abbreviated)))
                     .foregroundStyle(overdue && !isDone ? Theme.danger : fg.opacity(today ? 0.8 : 0.5)).frame(width: 130, alignment: .trailing)
             }
-            MenuButton(onDark: today && !isDone, items: [
+            MenuButton(onDark: today && !isDone, color: today && !isDone ? Theme.onAccent : nil, items: [
                 ("Edit", false, { ui.open(.editTodo(todo)) }),
                 ("Delete", true, { context.delete(todo); try? context.save(); reload() }),
             ])
@@ -411,7 +411,7 @@ struct TaskRow: View {
         let due = reminder.dueDate
         let today = due.map { Calendar.current.isDateInToday($0) } ?? false
         let overdue = due.map { $0 < Calendar.current.startOfDay(for: .now) } ?? false
-        let fg = today ? Theme.paper : Theme.ink
+        let fg = today ? Theme.onAccent : Theme.ink
         HStack(spacing: 20) {
             Button(action: complete) {
                 Circle().strokeBorder(fg.opacity(today ? 0.7 : 0.3), lineWidth: 1.5)
@@ -421,7 +421,7 @@ struct TaskRow: View {
             .buttonStyle(.plain)
             if reminder.priority > 0 {
                 Text(String(repeating: "!", count: reminder.priority == 1 ? 3 : reminder.priority == 5 ? 2 : 1))
-                    .font(.wave(20, .semibold)).foregroundStyle(today ? Theme.paper : Theme.violet)
+                    .font(.wave(20, .semibold)).foregroundStyle(today ? Theme.onAccent : Theme.violet)
             }
             Text(reminder.title ?? "").font(.wave(20, .medium)).tracking(-0.5).lineLimit(1)
             if reminder.hasAlarms { Icon("bell", size: 14, color: fg.opacity(0.5)) }
@@ -433,7 +433,7 @@ struct TaskRow: View {
                     .foregroundStyle(overdue ? Theme.danger : fg.opacity(today ? 0.8 : 0.5))
                     .monospacedDigit().frame(width: 130, alignment: .trailing)
             }
-            MenuButton(onDark: today, items: [
+            MenuButton(onDark: today, color: today ? Theme.onAccent : nil, items: [
                 ("Edit", false, { ui.open(.editTask(reminder)) }),
                 ("Delete", true, { try? store.delete(reminder); reload() }),
             ])

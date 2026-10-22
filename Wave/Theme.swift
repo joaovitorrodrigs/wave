@@ -49,6 +49,8 @@ enum Theme {
     static let paper = dynamic(.white, .black)
     static let black = dynamic(.black, .white)
     static let shadow = Color.black
+    /// Text and icons on violet or green: always white, in both schemes.
+    static let onAccent = Color.white
     static let brand = Color(red: 0, green: 0xC0 / 255, blue: 0x47 / 255)
     static let violet = Color(red: 0x74 / 255, green: 0x30 / 255, blue: 0xF7 / 255)
     /// Not on the site, which has nothing destructive. Vivid and cool like the green and violet; 4.7:1 on paper.
@@ -188,7 +190,7 @@ struct Chip: View {
     var body: some View {
         Text(text).font(.wave(14)).lineLimit(1).fixedSize()
             .padding(.horizontal, 16).padding(.vertical, 8)
-            .foregroundStyle(selected || onDark || tint != nil ? Theme.paper : Theme.ink.opacity(0.7))
+            .foregroundStyle(tint != nil ? Theme.onAccent : selected || onDark ? Theme.paper : Theme.ink.opacity(0.7))
             .background(tint ?? (selected ? Theme.ink : onDark ? Color.clear : Theme.chip), in: RoundedRectangle(cornerRadius: Theme.radiusButton))
             .overlay {
                 if onDark, !selected, tint == nil { RoundedRectangle(cornerRadius: Theme.radiusButton).stroke(Theme.paper.opacity(0.4)) }

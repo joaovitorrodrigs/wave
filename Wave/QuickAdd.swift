@@ -212,11 +212,11 @@ struct CapturePanel: View {
     private func quick(_ title: String, on: Bool, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                Icon("calendar-blank", size: 13, color: on ? Theme.paper : Theme.ink)
+                Icon("calendar-blank", size: 13, color: on ? Theme.onAccent : Theme.ink)
                 Text(title).font(.wave(14, .medium))
             }
             .padding(.horizontal, 12).padding(.vertical, 7)
-            .foregroundStyle(on ? Theme.paper : Theme.ink)
+            .foregroundStyle(on ? Theme.onAccent : Theme.ink)
             .background(on ? Theme.violet : Theme.chip, in: RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(PressStyle())
