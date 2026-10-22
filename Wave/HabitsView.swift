@@ -65,7 +65,6 @@ struct HabitCard: View {
             }
             .padding(.horizontal, 24).padding(.vertical, 12)
             .cardBlock(block)
-            .overlay { if done { RoundedRectangle(cornerRadius: Theme.radiusBlock).stroke(Theme.paper.opacity(0.06)) } }
 
             VStack(alignment: .leading, spacing: 20) {
                 Text(habit.streak == 0 ? "No streak yet. Today is a good day to start."
@@ -81,7 +80,6 @@ struct HabitCard: View {
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
             .cardBlock(block)
-            .overlay { if done { RoundedRectangle(cornerRadius: Theme.radiusBlock).stroke(Theme.paper.opacity(0.06)) } }
         }
         .foregroundStyle(fg)
         .cardFrame(dark: done)

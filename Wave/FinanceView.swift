@@ -264,7 +264,6 @@ struct FinancePage: View {
                                     }
                                     .padding(32).frame(maxWidth: .infinity, alignment: .leading)
                                     .background(Theme.darkCard, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
-                                    .overlay(RoundedRectangle(cornerRadius: Theme.radiusCard).stroke(Theme.paper.opacity(0.06)))
                                 }
                             }
                         }
@@ -512,7 +511,6 @@ struct StripeCard: View {
         .padding(32)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.darkCard, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
-        .overlay(RoundedRectangle(cornerRadius: Theme.radiusCard).stroke(Theme.paper.opacity(0.06)))
     }
 }
 
@@ -535,7 +533,6 @@ struct AccountCard: View {
         .padding(32)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.darkCard, in: RoundedRectangle(cornerRadius: Theme.radiusCard))
-        .overlay(RoundedRectangle(cornerRadius: Theme.radiusCard).stroke(Theme.paper.opacity(0.06)))
     }
 }
 
