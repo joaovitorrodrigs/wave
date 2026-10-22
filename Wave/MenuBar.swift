@@ -119,7 +119,7 @@ struct MenuBarPanel: View {
                             t.done = .now
                             try? t.modelContext?.save()
                             todos = Todo.open(ModelContext(Database.container))
-                        } label: { Circle().strokeBorder(Theme.ink.opacity(0.3), lineWidth: 1.5).frame(width: 18, height: 18) }.buttonStyle(.plain)
+                        } label: { Circle().strokeBorder(Theme.ink.opacity(0.3), lineWidth: 1.5).frame(width: 18, height: 18).contentShape(Circle()) }.buttonStyle(.plain)
                         Text(t.title).font(.wave(15, .medium)).lineLimit(1)
                         Spacer()
                     }
@@ -137,7 +137,7 @@ struct MenuBarPanel: View {
                             r.isCompleted = true
                             try? store.save(r)
                             Task { await store.fetch(.today) }
-                        } label: { Circle().strokeBorder(Theme.ink.opacity(0.3), lineWidth: 1.5).frame(width: 18, height: 18) }.buttonStyle(.plain)
+                        } label: { Circle().strokeBorder(Theme.ink.opacity(0.3), lineWidth: 1.5).frame(width: 18, height: 18).contentShape(Circle()) }.buttonStyle(.plain)
                         Text(r.title ?? "").font(.wave(15, .medium)).lineLimit(1)
                         Spacer()
                         if let d = r.dueDate, r.dueDateComponents?.hour != nil {

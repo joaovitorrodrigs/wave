@@ -258,6 +258,8 @@ struct TodoRow: View {
                     if isDone || checking { Circle().fill(Theme.brand); Icon("check", size: 12, color: .white) }
                 }
                 .frame(width: 22, height: 22)
+                .padding(6)
+                .contentShape(Circle())
             }
             .buttonStyle(.plain)
             Text(todo.title).font(.wave(20, .medium)).tracking(-0.5).lineLimit(1).strikethrough(isDone, color: fg.opacity(0.5))
@@ -417,6 +419,8 @@ struct TaskRow: View {
                 Circle().strokeBorder(fg.opacity(today ? 0.7 : 0.3), lineWidth: 1.5)
                     .background(Circle().fill(fg.opacity(hover ? 0.08 : 0)))
                     .frame(width: 22, height: 22)
+                    .padding(6)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
             if reminder.priority > 0 {
