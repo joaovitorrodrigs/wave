@@ -54,8 +54,8 @@ enum Theme {
     /// Not on the site, which has nothing destructive. Vivid and cool like the green and violet; 4.7:1 on paper.
     static let danger = Color(red: 0xDC / 255, green: 0x2F / 255, blue: 0x3A / 255)
     /// `bg-ink/[0.04]` on paper; on black that is invisible, so dark mode lifts it to white 8%.
-    static let surface = dynamic(NSColor(white: 0, alpha: 0.04), NSColor(white: 1, alpha: 0.08))
-    static let chip = dynamic(NSColor(white: 0, alpha: 0.05), NSColor(white: 1, alpha: 0.1))
+    static let surface = dynamic(NSColor(white: 0, alpha: 0.04), NSColor(white: 1, alpha: 0.06))
+    static let chip = dynamic(NSColor(white: 0, alpha: 0.05), NSColor(white: 1, alpha: 0.075))
     static let darkCard = dynamic(NSColor(white: 0x12 / 255, alpha: 1), NSColor(white: 0xF2 / 255, alpha: 1))
 
     /// "system", "light" or "dark", from Settings.
