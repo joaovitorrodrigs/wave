@@ -69,15 +69,26 @@ enum Keychain {
             for t in fresh { byId[t.id] = t }
             s.transactions = byId.values.filter { $0.date >= yearAgo }.sorted { $0.date > $1.date }
 
-            s.investments = (try? await post("investments/list", [:], key: key) as [Investment]) ?? s.investments
+            // Banco MCP allows 2 requests a second; breathe between the extra calls and keep the first failure visible.
+            var problems: [String] = []
+            try await Task.sleep(for: .milliseconds(600))
+            do { s.investments = try await post("investments/list", [:], key: key) } catch { problems.append("investments: \(error.localizedDescription)") }
             var bills: [CardBill] = []
             for account in s.accounts where account.type == "CREDIT" {
-                let rows: [CardBill] = (try? await post("credit-card-bills/list", ["account_id": account.id, "page": 1, "page_size": 6], key: key)) ?? []
-                bills += rows.map { var b = $0; b.accountId = account.id; return b }
+                try await Task.sleep(for: .milliseconds(600))
+                do {
+                    let rows: [CardBill] = try await post("credit-card-bills/list", ["account_id": account.id, "page": 1, "page_size": 6], key: key)
+                    bills += rows.map { var b = $0; b.accountId = account.id; return b }
+                } catch { problems.append("bills: \(error.localizedDescription)") }
             }
             if !bills.isEmpty { s.bills = bills.sorted { $0.dueDate > $1.dueDate } }
             if s.categories.isEmpty || (s.categoriesFetched.map { Date.now.timeIntervalSince($0) > 7 * 86400 } ?? true) {
-                if let cats: [CategoryInfo] = try? await post("categories/list", [:], key: key) { s.categories = cats; s.categoriesFetched = .now }
+                try await Task.sleep(for: .milliseconds(600))
+                do {
+                    let cats: [CategoryInfo] = try await post("categories/list", [:], key: key)
+                    s.categories = cats
+                    s.categoriesFetched = .now
+                } catch { problems.append("categories: \(error.localizedDescription)") }
             }
             if let stripeKey = Keychain.get(Self.stripeAccount) { s.stripe = try? await stripeSummary(key: stripeKey) } else { s.stripe = nil }
 
@@ -93,7 +104,7 @@ enum Keychain {
             s.fetched = .now
             s.save()
             snapshot = s
-            error = nil
+            error = problems.first
         } catch {
             self.error = error.localizedDescription
         }
